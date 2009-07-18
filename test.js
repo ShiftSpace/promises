@@ -28,7 +28,10 @@ var myAdd = function(a, b)
 var myFn = function() 
 {
   var p1 = getA();
+  p1.op(function(value) { return value + ", ";});
   var p2 = getB();
+  p2.op(function (value) { return value + "baz";})
+  p2.op(function (value) { return value + "zeb";})
   return myAdd(p1, p2);
 }.decorate(promise)
 
