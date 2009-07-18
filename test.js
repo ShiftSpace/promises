@@ -1,37 +1,11 @@
 window.addEvent('domready', init);
 
 
-var getA = function() 
+var get = function(rsrc) 
 {
   return new Request({
     method: 'get',
-    url: 'a.json'
-  });
-}.decorate(promise)
-
-
-var getB = function() 
-{
-  return new Request({
-    method: 'get',
-    url: 'b.json'
-  });
-}.decorate(promise)
-
-var getC = function() 
-{
-  return new Request({
-    method: 'get',
-    url: 'c.json'
-  });
-}.decorate(promise)
-
-
-var getD = function() 
-{
-  return new Request({
-    method: 'get',
-    url: 'd.json'
+    url: rsrc+'.json'
   });
 }.decorate(promise)
 
@@ -57,8 +31,7 @@ var show = function(value)
 }.decorate(promise)
 
 
-var v;
 function init()
 {
-  show(myAdd(myAdd(getA(), getB()), myAdd(getD(), getC())));
+  show(myAdd(myAdd(get('a'), get('b')), myAdd(get('d'), get('c'))));
 }
