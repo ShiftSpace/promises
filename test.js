@@ -18,6 +18,23 @@ var getB = function()
   });
 }.decorate(promise)
 
+var getC = function() 
+{
+  return new Request({
+    method: 'get',
+    url: 'c.json'
+  });
+}.decorate(promise)
+
+
+var getD = function() 
+{
+  return new Request({
+    method: 'get',
+    url: 'd.json'
+  });
+}.decorate(promise)
+
 
 var myAdd = function(a, b) 
 {
@@ -28,10 +45,8 @@ var myAdd = function(a, b)
 var myFn = function()
 {
   var p1 = getA();
-  p1.op(function(value) { return value + ", ";});
+  p1.op(function(value) { return value + " "; });
   var p2 = getB();
-  p2.op(function (value) { return value + "baz";})
-  p2.op(function (value) { return value + "zeb";})
   return myAdd(p1, p2);
 }.decorate(promise)
 
@@ -45,5 +60,5 @@ var show = function(value)
 var v;
 function init()
 {
-  show(myFn());
+  show(myAdd(myAdd(getA(), getB()), myAdd(getD(), getC())));
 }
