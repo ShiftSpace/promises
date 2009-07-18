@@ -27,7 +27,7 @@ var Promise = new Class({
   name: "Promise",
   
   
-  initialize: function(value, fn)
+  initialize: function(value, reduce)
   {
     this.__realized = false;
     this.__ops = [];
@@ -36,12 +36,12 @@ var Promise = new Class({
     {
       this.initReq(value);
     }
-    else if(value && $type(value) == "array")
+    else if(value && $type(value) == "array" && reduce && $type(reduce) == "function")
     {
       var promises = value.filter(isPromise);
       var watch = new Group(promises);
       watch.addEvent("realized", function() {
-        this.setValue(fn.apply(null, value.map(getValue)));
+        this.setValue(reduce.apply(null, value.map(getValue)));
       }.bind(this));
     }
     else if(value)
