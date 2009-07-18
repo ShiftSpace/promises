@@ -25,7 +25,7 @@ var myAdd = function(a, b)
 }.decorate(promise);
 
 
-var myFn = function() 
+var myFn = function()
 {
   var p1 = getA();
   p1.op(function(value) { return value + ", ";});

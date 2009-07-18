@@ -27,18 +27,26 @@ var Promise = new Class({
   name: "Promise",
   
   
-  initialize: function(value, options)
+  initialize: function(value, fn)
   {
     this.__realized = false;
     this.__ops = [];
     
-    if(value && !value.xhr)
-    {
-      throw new Error("You can only create empty promises or promises from Request.JSON objects.");
-    }
-    else if(value && value.xhr)
+    if(value && value.xhr)
     {
       this.initReq(value);
+    }
+    else if(value && $type(value) == "array")
+    {
+      var promises = value.filter(isPromise);
+      var watch = new Group(promises);
+      watch.addEvent("realized", function() {
+        this.setValue(fn.apply(null, value.map(getValue)));
+      }.bind(this));
+    }
+    else if(value)
+    {
+      throw new Error("You can only create empty promises or promises from Request.JSON objects.");
     }
   },
 
@@ -105,13 +113,21 @@ var Promise = new Class({
 });
 
 
+var Watcher = new Class({
+  initialize: function()
+  {
+    
+  }
+});
+
+
 function isPromise(obj)
 {
   return obj.name == "Promise";
 }
 
 
-function value(v)
+function getValue(v)
 {
   if(isPromise(v)) return v.value();
   return v;
@@ -133,9 +149,7 @@ function promise(fn)
   return function decorator() {
     var args = $A(arguments);
 
-    var promises = args.filter(function(arg) {
-      return isPromise(arg);
-    });
+    var promises = args.filter(isPromise);
     
     if(promises.length > 0)
     {
@@ -143,7 +157,7 @@ function promise(fn)
       var p = new Promise();
 
       watching.addEvent("realized", function() {
-        args = args.map(value);
+        args = args.map(getValue);
         p.setValue(fn.apply(this, args));
       }.bind(this));
 
