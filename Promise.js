@@ -38,10 +38,10 @@ var Promise = new Class({
     }
     else if(value && $type(value) == "array" && reduce && $type(reduce) == "function")
     {
-      var promises = value.filter(isPromise);
+      var promises = value.filter(Promise.isPromise);
       var watch = new Group(promises);
       watch.addEvent("realized", function() {
-        this.setValue(reduce.apply(null, value.map(getValue)));
+        this.setValue(reduce.apply(null, value.map(Promise.getValue)));
       }.bind(this));
     }
     else if(value)
@@ -113,28 +113,20 @@ var Promise = new Class({
 });
 
 
-var Watcher = new Class({
-  initialize: function()
-  {
-    
-  }
-});
-
-
-function isPromise(obj)
+Promise.isPromise = function(obj)
 {
   return obj.name == "Promise";
 }
 
 
-function getValue(v)
+Promise.getValue = function(v)
 {
-  if(isPromise(v)) return v.value();
+  if(Promise.isPromise(v)) return v.value();
   return v;
 }
 
 
-function promiseOrValue(v)
+Promise.promiseOrValue = function(v)
 {
   if(v.xhr)
   {
@@ -149,7 +141,7 @@ function promise(fn)
   return function decorator() {
     var args = $A(arguments);
 
-    var promises = args.filter(isPromise);
+    var promises = args.filter(Promise.isPromise);
     
     if(promises.length > 0)
     {
@@ -157,7 +149,7 @@ function promise(fn)
       var p = new Promise();
 
       watching.addEvent("realized", function() {
-        args = args.map(getValue);
+        args = args.map(Promise.getValue);
         p.setValue(fn.apply(this, args));
       }.bind(this));
 
@@ -165,7 +157,7 @@ function promise(fn)
     }
     else
     {
-      return promiseOrValue(fn.apply(this, args));
+      return Promise.promiseOrValue(fn.apply(this, args));
     }
   }
 }
