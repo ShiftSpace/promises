@@ -25,13 +25,17 @@ var myFn = function()
 }.decorate(promise)
 
 
-var show = function(value)
+var show = function(arg1, arg2, arg3)
 {
-  console.log("show: " + value);
+  console.log('show ----------');
+  console.log("arg1: " + arg1);
+  console.log("arg2: " + arg2);
+  console.log("arg3: " + arg3);
+  console.log('---------------');
 }.decorate(promise)
 
 
 function init()
 {
-  show(myAdd(myAdd(get('a'), get('b')), myAdd(get('d'), get('c'))));
+  show(1, myAdd(myAdd(get('a'), get('b')), myAdd(get('d'), get('c'))), 2);
 }
