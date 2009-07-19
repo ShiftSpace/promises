@@ -83,7 +83,7 @@ var Promise = new Class({
     }
     else if(value)
     {
-      throw new Error("You can only create empty promises or promises from Request.JSON objects.");
+      throw new Error("You can only create empty promises or promises from Request objects.");
     }
   },
 
@@ -174,10 +174,14 @@ Promise.isPromise = function(obj)
   return obj.name == "Promise";
 }
 
-
+// returns a value if not a promise
+// otherwise unwraps promises until we get to an unrealized one
 Promise.getValue = function(v)
 {
-  if(Promise.isPromise(v)) return v.value();
+  while (Promise.isPromise(v) && v.isRealized())
+  {
+    v = v.value();
+  }
   return v;
 }
 
@@ -213,7 +217,7 @@ Promise.watch = function(args, cb)
   
     watching.addEvent('realized', function() {
       args = args.map(Promise.getValue);
-      if(!Promise.allRealized(args)) 
+      if(!Promise.allRealized(args))
       {
         Promise.watch(args, cb);
       }
@@ -225,6 +229,7 @@ Promise.watch = function(args, cb)
   }
   else
   {
+    // convert immediately
     cb(Promise.toValues(args))
   }
 }

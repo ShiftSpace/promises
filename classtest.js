@@ -1,3 +1,4 @@
+/*
 window.addEvent('domready', ctinit);
 
 
@@ -39,3 +40,4 @@ function ctinit()
   var instance = new MyClass();
   ctshow(instance.add());
 }
+*/
