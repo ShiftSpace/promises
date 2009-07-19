@@ -1,7 +1,7 @@
 window.addEvent('domready', init);
 
 
-var get = function get(rsrc) 
+var get = function(rsrc) 
 {
   return new Request({
     method: 'get',
@@ -10,13 +10,13 @@ var get = function get(rsrc)
 }.decorate(promise)
 
 
-var myAdd = function myAdd(a, b) 
+var addFn = function(a, b) 
 {
   return a + b;
 }.decorate(promise)
 
 
-var myFn = function myFn(v)
+var fnA = function(v)
 {
   var p = get('c');
   p.op(function(value) { return value.toUpperCase() + v; });
@@ -24,18 +24,13 @@ var myFn = function myFn(v)
 }.decorate(promise)
 
 
-var show = function show(arg1, arg2, arg3)
+var show = function show(arg)
 {
-  console.log('show');
-  console.log('---------------');
-  console.log("arg1: " + arg1);
-  console.log("arg2: " + arg2);
-  console.log("arg3: " + arg3);
-  console.log('---------------');
+  console.log(arg);
 }.decorate(promise)
 
 
 function init()
 {
-  show(1, myAdd(myAdd(get('a'), get('b')), myAdd(get('d'), myFn(get('f')))), 2);
+  show(addFn(addFn(get('a'), get('b')), addFn(get('d'), fnA(get('f')))));
 }
