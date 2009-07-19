@@ -21,6 +21,15 @@ Function.implement({
 });
 
 
+function $msg(methodName) 
+{
+  var rest = $A(arguments).drop(1);
+  return function(obj) {
+    return obj[methodName].apply(obj, rest);
+  };
+}
+
+
 var Promise = new Class({
 
   Implements: [Events, Options],
@@ -109,6 +118,12 @@ var Promise = new Class({
   value: function()
   {
     return this.__value;
+  },
+  
+  
+  isRealized: function()
+  {
+    return this.__isRealized;
   }
 });
 
@@ -136,6 +151,19 @@ Promise.promiseOrValue = function(v)
 }
 
 
+Promise.watch = function(vs, cb)
+{
+  var watching = new Groups(vs);
+  var p = new Promise();
+}
+
+
+Promise.allRealized = function(vs)
+{
+  return vs.filter(isPromise).map($msg("isRealized"));
+}
+
+
 function promise(fn) 
 {
   return function decorator() {
@@ -148,6 +176,8 @@ function promise(fn)
       var watching = new Group(promises);
       var p = new Promise();
 
+      
+      
       watching.addEvent("realized", function() {
         args = args.map(Promise.getValue);
         p.setValue(fn.apply(this, args));
@@ -157,7 +187,9 @@ function promise(fn)
     }
     else
     {
-      return Promise.promiseOrValue(fn.apply(this, args));
+      var porv = Promise.promiseOrValue(fn.apply(this, args));
+      if(porv.name == "Promise") console.log("return promise " + fn.name);
+      return porv;
     }
   }
 }
