@@ -13,15 +13,14 @@ var get = function(rsrc)
 var myAdd = function(a, b) 
 {
   return a + b;
-}.decorate(promise);
+}.decorate(promise)
 
 
-var myFn = function()
+var myFn = function(v)
 {
-  var p1 = getA();
-  p1.op(function(value) { return value + " "; });
-  var p2 = getB();
-  return myAdd(p1, p2);
+  p = get('c');
+  p.op(function(value) { return value.toUpperCase(); });
+  return myAdd(get('e'), p);
 }.decorate(promise)
 
 
@@ -37,5 +36,5 @@ var show = function(arg1, arg2, arg3)
 
 function init()
 {
-  show(1, myAdd(myAdd(get('a'), get('b')), myAdd(get('d'), get('c'))), 2);
+  show(1, myAdd(myAdd(get('a'), get('b')), myAdd(get('d'), myFn(get('f')))), 2);
 }
