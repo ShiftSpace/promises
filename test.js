@@ -42,4 +42,5 @@ function init()
   var p2 = fnB(fnB(fnB(fnB(fnB(get('a'), 'b'), 'c'), 'd'), 'e'), 'f'); // abcdef promise
   
   show(addFn(addFn(p1, " "), p2)); // abdCf abcdef
+  show("Aren't promises neat?"); // throws an error
 }

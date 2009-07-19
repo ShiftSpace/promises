@@ -199,7 +199,7 @@ Promise.toValues = function(ary)
 
 Promise.promiseOrValue = function(v)
 {
-  if(v.xhr)
+  if(v && v.xhr)
   {
     return new Promise(v);
   }
