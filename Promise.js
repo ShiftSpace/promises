@@ -1,3 +1,31 @@
+Array.implement({
+  first: function() {
+    return this[0];
+  },
+  
+  rest: function() {
+    return this.slice(1, this.length);
+  },
+  
+  drop: function(n) {
+    return this.slice(n, this.length);
+  },
+  
+  isEmpty: function() {
+    return this.length == 0;
+  },
+  
+  isEqual: function(ary) {
+    if(this.length != ary.length) return false;
+    for(var i = 0; i < this.length; i++)
+    {
+      if(this[i] != ary[i]) return false;
+    }
+    return true;
+  }
+});
+
+
 Function.implement({
   decorate: function()
   {
@@ -94,6 +122,12 @@ var Promise = new Class({
   },
   
   
+  hasOps: function()
+  {
+    return this.__ops.length > 0;
+  },
+  
+  
   setValue: function(value)
   {
     if(!value) return;
@@ -117,13 +151,20 @@ var Promise = new Class({
   
   value: function()
   {
-    return this.__value;
+     if(this.hasOps()) this.__value = this.applyOps(this.__value);
+     return this.__value;
   },
   
   
   isRealized: function()
   {
-    return this.__isRealized;
+    return this.__realized;
+  },
+  
+  
+  isNotRealized: function()
+  {
+    return !this.__realized;
   }
 });
 
@@ -141,6 +182,16 @@ Promise.getValue = function(v)
 }
 
 
+Promise.toValues = function(ary)
+{
+  while(ary.some(Promise.isPromise))
+  {
+    ary = ary.map(Promise.getValue);
+  }
+  return ary;
+}
+
+
 Promise.promiseOrValue = function(v)
 {
   if(v.xhr)
@@ -151,16 +202,37 @@ Promise.promiseOrValue = function(v)
 }
 
 
-Promise.watch = function(vs, cb)
+Promise.watch = function(args, cb)
 {
-  var watching = new Groups(vs);
-  var p = new Promise();
+  var promises = args.filter(Promise.isPromise);
+  var unrealized = args.filter($msg("isNotRealized"));
+  
+  if(unrealized.length > 0)
+  {
+    var watching = new Group(args);
+  
+    watching.addEvent('realized', function() {
+      args = args.map(Promise.getValue);
+      if(!Promise.allRealized(args)) 
+      {
+        Promise.watch(args, cb);
+      }
+      else
+      {
+        cb(Promise.toValues(args));
+      }
+    });
+  }
+  else
+  {
+    cb(Promise.toValues(args))
+  }
 }
 
 
 Promise.allRealized = function(vs)
 {
-  return vs.filter(isPromise).map($msg("isRealized"));
+  return vs.filter(Promise.isPromise).every($msg("isRealized"));
 }
 
 
@@ -173,14 +245,10 @@ function promise(fn)
     
     if(promises.length > 0)
     {
-      var watching = new Group(promises);
       var p = new Promise();
-
       
-      
-      watching.addEvent("realized", function() {
-        args = args.map(Promise.getValue);
-        p.setValue(fn.apply(this, args));
+      Promise.watch(args, function(realized) {
+        p.setValue(fn.apply(this, realized));
       }.bind(this));
 
       return p;
@@ -188,7 +256,6 @@ function promise(fn)
     else
     {
       var porv = Promise.promiseOrValue(fn.apply(this, args));
-      if(porv.name == "Promise") console.log("return promise " + fn.name);
       return porv;
     }
   }
