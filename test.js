@@ -38,7 +38,8 @@ var show = function show(arg)
 
 function init()
 {
-  var p1 = addFn(addFn(get('a'), get('b')), addFn(get('d'), fnA(get('f')))); // abdCf
-  var p2 = fnB(fnB(fnB(fnB(fnB(get('a'), 'b'), 'c'), 'd'), 'e'), 'f'); // abcdef
+  var p1 = addFn(addFn(get('a'), get('b')), addFn(get('d'), fnA(get('f')))); // abdCf promise
+  var p2 = fnB(fnB(fnB(fnB(fnB(get('a'), 'b'), 'c'), 'd'), 'e'), 'f'); // abcdef promise
+  
   show(addFn(addFn(p1, " "), p2)); // abdCf abcdef
 }
