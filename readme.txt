@@ -18,8 +18,8 @@ it extendable for others, you have to do something like the following:
 
   function displayBar(value, callback)
   {
-    var result = displayFoo(value, callback);
-    ... some code ...
+    ... some custom code ...
+    displayFoo(value, callback);
   }
 
 In large application you get an explosion of callbacks. For the next
@@ -35,11 +35,17 @@ example let's look at a common pattern in AJAX applications.
     doSomething(response);
   }
 
-Now AJAX programmers have simple gotten used to this pattern but
+Now AJAX programmers have simply gotten used to this pattern but
 what's happened here is not desirable. We've broken out the logic of
 handleFoo not because we want to, but because we want to maintain
-readability. If it wasn't for the callback we would have written
-something like the following:
+readability. This is also not composable. That is you cannot change
+the behavior of the result of the aysynchronous call by composing some
+functions together. You have to put any new logic into handleFoo.
+We'll see the implications of this at the end.
+
+Let's look at how you write JavaScript when you're not dealing with
+asynchronous calls. If it wasn't for the callback we would have
+written something like the following:
 
   function bar()
   {
@@ -47,7 +53,7 @@ something like the following:
     doSomething(result);
   }
 
-Promises allow you do exactly this! What does it look like?
+Guess what? Promises allow you do exactly this! What does it look like?
 
   function bar()
   {
@@ -65,13 +71,16 @@ to be used in this way you decorate it with promise like so.
     ... some code ...
   }.decorate(promise)
 
-The promise decorator does a couple of fancy things. First of all it
-doesn't change the behavior of the function. You can pass normal
-arguments to this function and it will work just fine.
+The promise decorator does a couple of fancy things. 
+
+First, of all it doesn't change the behavior of the function. You can
+pass normal arguments to this function and it will work just fine.
 
 Second, if any the arguments to getFoo are unrealized Promise
 instances it will block. getFoo will only execute when all those
-Promises instances have realized their values (sweet isn't it?).
+Promises instances have realized their values (sweet isn't it?). This
+works even if the values of the Promises themselves are unrealized
+promises!
 
 Third, if the result of a promise decorated function is a MooTools
 request object it will automatically create a promise and return that.
@@ -86,7 +95,8 @@ request object it will automatically create a promise and return that.
 
 Hmm, this sounds good but when writing code you often want to
 manipulate the result of a function. How can you do that with
-Promises?
+Promises? For example in code we often write something like
+the following:
 
   function bar()
   {
@@ -94,7 +104,7 @@ Promises?
     result = result + 5;
   }
 
-With Promises you can accomplish the same thing with the following:
+With Promises you can accomplish the same thing with:
 
   function bar()
   {
@@ -102,7 +112,11 @@ With Promises you can accomplish the same thing with the following:
     p.op(function(v) {return v+5});
   }
 
-Let's demonstrate something that's difficult to do without promises.
+A little more typing here, but let's see how much typing Promises
+really save in non-trivial applications.  Let's demonstrate something
+that's difficult to do without promises. For example say we want
+values of 6 different remote resources and we want to add them
+together. With promises it will look something like this.
 
   var get = function(rsrc) 
   {
@@ -125,10 +139,10 @@ Let's demonstrate something that's difficult to do without promises.
 
   show(fnB(fnB(fnB(fnB(fnB(get('a'), 'b'), 'c'), 'd'), 'e'), 'f'))
 
-Notice we have no callbacks. When run this code will print "abcdef" to
-JavaScript console. In traditional AJAX programming there is just no
-way to express the above. What you have to do looks something like
-the following.
+Notice we have no callbacks. When we run this code will print "abcdef"
+to JavaScript console. In traditional AJAX programming there is just
+no way to express the above succintly or in a composable manner. What
+you have to do looks something like the following.
 
   function get(rsrc, callback) 
   {
@@ -145,17 +159,17 @@ the following.
   }
 
   var result = '';
-  badGet('a', function(response) {
+  get('a', function(response) {
     result += JSON.decode(response).data;
-    badGet('b', function(response) {
+    get('b', function(response) {
       result += JSON.decode(response).data;
-      badGet('c', function(response) {
+      get('c', function(response) {
         result += JSON.decode(response).data;
-        badGet('d', function(response) {
+        get('d', function(response) {
           result += JSON.decode(response).data;
-          badGet('e', function(response) {
+          get('e', function(response) {
             result += JSON.decode(response).data;
-            badGet('f', function(response) {
+            get('f', function(response) {
               result += JSON.decode(response).data;
               show(result);
             });
@@ -164,4 +178,4 @@ the following.
       });
     });
   });
-
+				   
