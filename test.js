@@ -19,8 +19,7 @@ var addFn = function(a, b)
 var fnA = function(v)
 {
   var p = get('c');
-  p.op(function(value) { return value.toUpperCase() + v; });
-  return p;
+  return p.op(function(value) { return value.toUpperCase() + v; });
 }.decorate(promise)
 
 
