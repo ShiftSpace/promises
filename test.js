@@ -19,18 +19,18 @@ var myAdd = function myAdd(a, b)
 var myFn = function myFn(v)
 {
   var p = get('c');
-  p.op(function(value) { console.log("Hmm: " + value); return value.toUpperCase() + v; });
+  p.op(function(value) { return value.toUpperCase() + v; });
   return p;
 }.decorate(promise)
 
 
 var show = function show(arg1, arg2, arg3)
 {
-  console.log('show ----------');
+  console.log('show');
+  console.log('---------------');
   console.log("arg1: " + arg1);
-  console.log(arg1);
-  //console.log("arg2: " + arg2);
-  //console.log("arg3: " + arg3);
+  console.log("arg2: " + arg2);
+  console.log("arg3: " + arg3);
   console.log('---------------');
 }.decorate(promise)
 
@@ -38,7 +38,4 @@ var show = function show(arg1, arg2, arg3)
 function init()
 {
   show(1, myAdd(myAdd(get('a'), get('b')), myAdd(get('d'), myFn(get('f')))), 2);
-  
-  // what does show get?
-  show(myFn(get('f')));
 }

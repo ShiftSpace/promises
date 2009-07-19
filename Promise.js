@@ -209,11 +209,11 @@ Promise.promiseOrValue = function(v)
 Promise.watch = function(args, cb)
 {
   var promises = args.filter(Promise.isPromise);
-  var unrealized = args.filter($msg("isNotRealized"));
+  var unrealized = promises.filter($msg("isNotRealized"));
   
   if(unrealized.length > 0)
   {
-    var watching = new Group(args);
+    var watching = new Group(unrealized);
   
     watching.addEvent('realized', function() {
       args = args.map(Promise.getValue);
