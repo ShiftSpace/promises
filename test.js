@@ -1,6 +1,5 @@
 window.addEvent('domready', init);
 
-
 var get = function(rsrc) 
 {
   return new Request({
