@@ -19,8 +19,8 @@ Now suppose that you want to make requests for all 6 resources and you
 would like to produce the string "abcdef". If you've done some AJAX
 programming the following requirements should be pretty clear.
 
-** You need some kind of accumulator to hold the final string.
-** The requests must be made in correct order for the correct string
+# You need some kind of accumulator to hold the final string.
+# The requests must be made in correct order for the correct string
    to be produced.
 
 You code will look something like the following:
@@ -246,121 +246,123 @@ robust full concurrent client side JavaScript application.
 
 Rules of thumb:
 
-1. At the creation site of Promise you can modify the Promise at will.
-2. As soon as Promise is sent to another function, you call op at your peril.
+# At the creation site of Promise you can modify the Promise at will.
+# As soon as Promise is sent to another function, you call op at your peril.
 
 Another thing to watch out for is that code that uses promises is not
 deterministic. You have to be aware of that fact when using functions
 that return promises:
 
-  var MyClass = new Class({
+<pre>
+var MyClass = new Class({
 
-    loadResource: function(rsrc)
-    {
-      return new Request({
-         url: ...,
-         method: 'get'
-      });
-    }.decorate(promise),
+  loadResource: function(rsrc)
+  {
+    return new Request({
+       url: ...,
+       method: 'get'
+    });
+  }.decorate(promise),
 
-    doA: funtion()
-    {
-    }.decorate(promise),
+  doA: funtion()
+  {
+  }.decorate(promise),
 
-    doB: function()
-    {
-    }.decorate(proimse),
+  doB: function()
+  {
+  }.decorate(proimse),
 
-    myMethod: function() 
-    {
-      this.doA(this.loadResource(...));
-      this.doB(this.loadResource(...));
-    }
+  myMethod: function() 
+  {
+    this.doA(this.loadResource(...));
+    this.doB(this.loadResource(...));
+  }
 
-  })
+})
+</pre>
 
 doA should not depend on the behavior of doB at all. When coding without
 promises you would know that if you changed something in doA that
 change would appear doB because you called doA first. Using promises
 is very much like writing code with threads. You have no such guarantees.
 
-Use Cases
----------
+h1. Use Cases
 
-  Without Promises
-  ----------------
+h2. Without Promises
  
-  var MyClass = new Class({
- 
-    initialize: function(el, options)
+<pre lang="javascript">
+var MyClass = new Class({
+
+  initialize: function(el, options)
+  {
+    this.setOptions(...);
+    
+    if(this.options.cssFiles)
     {
-      this.setOptions(...);
-      
-      if(this.options.cssFiles)
-      {
-        var reqs = this.options.cssFiles.map(this.getFile.bind(this));
-        var group = new Group(reqs);
-        group.addEvent('onComplete', function() {
-          this.show(reqs.map(function(req) { return req.responseText; }));
-        }.bind(this);
-        reqs.each(function(req) { req.send(); });
-      }
-      else
-      {
-        this.show();
-      }
-    },
- 
-    getFile: function(url)
-    {
-      return new Request({
-        url: url,
-        method: 'get'
-      });
-    },
- 
-    show: function(cssFiles)
-    {
-      if(css) this.addCssFiles(cssFiles);
-      ...
+      var reqs = this.options.cssFiles.map(this.getFile.bind(this));
+      var group = new Group(reqs);
+      group.addEvent('onComplete', function() {
+        this.show(reqs.map(function(req) { return req.responseText; }));
+      }.bind(this);
+      reqs.each(function(req) { req.send(); });
     }
+    else
+    {
+      this.show();
+    }
+  },
 
- });
+  getFile: function(url)
+  {
+    return new Request({
+      url: url,
+      method: 'get'
+    });
+  },
 
+  show: function(cssFiles)
+  {
+    if(css) this.addCssFiles(cssFiles);
+    ...
+  }
 
- With Promises
- -------------
- 
- var MyClass = new Class({
- 
-   initialize: function(el, options)
-   {
-     this.setOptions(...);
-     
-     var p = null;
-     if(this.options.cssFiles)
-     {
-        p = new Promise(this.options.cssFiles.map(this.getFile));
-     }
-     
-     this.show(p);
-   },
- 
-   getFile: function(url)
-   {
-     return new Request({
-       url: url
-       method: 'get'
-     });
-   }.decorate(promise),
- 
-   show: function(cssFiles)
-   {
-      if(css) this.addCSS(cssFiles);
-      ...
-   }.decorate(promise)
- 
- );
+});
+</pre>
+
+h2. With Promises
+
+<pre> 
+var MyClass = new Class({
+
+  initialize: function(el, options)
+  {
+    this.setOptions(...);
+    
+    var p = null;
+    if(this.options.cssFiles)
+    {
+       p = new Promise(this.options.cssFiles.map(this.getFile));
+    }
+    
+    this.show(p);
+  },
+  
+  getFile: function(url)
+  {
+    return new Request({
+      url: url
+      method: 'get'
+    });
+  }.decorate(promise),
+  
+  show: function(cssFiles)
+  {
+     if(css) this.addCSS(cssFiles);
+     ...
+  }.decorate(promise)
+  
+);
+</pre>
 
 
 The Promises version here has several advantages. We don't need to use
@@ -374,32 +376,32 @@ asynchronous parameter- like an html fragment. This means creating
 another closure, a separate send, and another request -> responseText
 operation. 
 
-
-  if(this.options.cssFiles)
-  {
-    var reqs = this.options.cssFiles.map(this.getFile.bind(this));
-    var html = this.getFile("foo.html"); // need a closure
-    reqs.push(html); // add it to the requests list
-    var group = new Group(reqs);
-    group.addEvent('onComplete', function() {
-      this.show(reqs.map(function(req) { return req.responseText; }),
-      html.responseText); // need to convert to responseText
-    }.bind(this);
-    reqs.each(function(req) { req.send(); });
-  }
-
+<pre>
+if(this.options.cssFiles)
+{
+  var reqs = this.options.cssFiles.map(this.getFile.bind(this));
+  var html = this.getFile("foo.html"); // need a closure
+  reqs.push(html); // add it to the requests list
+  var group = new Group(reqs);
+  group.addEvent('onComplete', function() {
+    this.show(reqs.map(function(req) { return req.responseText; }),
+    html.responseText); // need to convert to responseText
+  }.bind(this);
+  reqs.each(function(req) { req.send(); });
+}
+</pre>
 
 With Promises this will require only adding a single line.
 
+<pre>
+var p = null;
+if(this.options.cssFiles)
+{
+  p = new Promise(this.options.cssFiles.map(this.getFile));
+}
 
-  var p = null;
-  if(this.options.cssFiles)
-  {
-    p = new Promise(this.options.cssFiles.map(this.getFile));
-  }
-  
-  this.show(p, this.getFile("foo.html")); // the only change
-
+this.show(p, this.getFile("foo.html")); // the only change
+</pre>
 
 Hopefully you're beginning to see that regular requests cannot be composed
 and Promises can. Without Promises you have to manage a lot of request
