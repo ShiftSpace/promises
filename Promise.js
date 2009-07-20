@@ -166,7 +166,7 @@ var Promise = new Class({
 
 Promise.isPromise = function(obj)
 {
-  return obj.name == "Promise";
+  return (obj && obj.name == "Promise");
 }
 
 
