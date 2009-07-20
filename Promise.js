@@ -112,7 +112,8 @@ var Promise = new Class({
     {
       this.setValue(fn(this.__value));
     }
-    return this;
+    if(!this.__realized) return this;
+    return this.value();
   },
   
   
