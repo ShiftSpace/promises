@@ -1,5 +1,4 @@
-Rationale
-================================================================================
+h1. Rationale
 
 The following is written with MooTools in mind however the Promises
 library has few requirments, it would be quite simple to port it to
@@ -12,7 +11,9 @@ resources on your web service: a, b, c, d, e, f. For simplicity's sake
 let's imaginee that these are just json files with the following
 format. For example a.json might look something like the following:
 
+<code>
 {data: "a"}
+</code>
 
 Now suppose that you want to make requests for all 6 resources and you
 would like to produce the string "abcdef". If you've done some AJAX
