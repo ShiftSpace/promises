@@ -139,7 +139,7 @@ value2, "af", is needed elsewhere. Damn. You can't reuse the code you've
 written here because the computation of value2 cannot placed in its
 own function without duplicating code- the waiting logic for a and b
 that is shared by both the computation of value1 and value2. Wow, as your
-requirements become more and mor complex your code will become harder
+requirements become more and more complex your code will become harder
 and harder to maintain.
 
 This clearly illustrates that traditional style AJAX requests cannot
@@ -208,7 +208,7 @@ decorator called *promise* that does a few interesting things:
   were passed in. If so, the function blocks until those Promises have
   been realized. If a realized Promise returns an unrealized Promise
   as a value, the function will continue to block.
-# This means all arguments inside of promise decorated function will
+# This means all arguments inside of a promise decorated function will
   be guaranteed to be realized. The upside is that you call these
   functions with non-Promise arguments and they will work just fine!
 # Reread 3. This means you can sanely unit test AJAX code!
@@ -238,8 +238,8 @@ var show = function show(arg)
 show(fnA(fnA(fnA(fnA(fnA(get('a'), 'b'), 'c'), 'd'), 'e'), 'f'))
 </pre>
 
-Notice we have no callbacks. Yes this code makese 6 simultaneous
-Requests. We don't have to queue them.  When we run this code will
+Notice we have no callbacks. Yes this code makes 6 simultaneous
+Requests. We don't have to queue them.  When we run this code it will
 print "abcdef" to the JavaScript console. In traditional AJAX
 programming there is just no way to express the above succintly.
 
@@ -272,7 +272,7 @@ applied to the value. The quick facts:
 # Promise.op allows you to modify the value of a Promise.
 # If a Promise is unrealized Promise.op returns the Promise.
 # If realized, Promise.op returns the value after the op is applied.
-# Before the Promise fires it's realized event all ops that were
+# Before the Promise fires its realized event all ops that were
   queued up will be applied first.
 
 This might seem overly complex, but consider the following real world
@@ -367,9 +367,9 @@ responseText values.
 # The call to show only blocks if we have files to load.
 
 Now imagine that you decide that show needs to take another
-asynchronous parameter- like an html fragment. This means creating
-another closure, a separate send, and another request -> responseText
-operation. 
+asynchronous parameter- like an html fragment. In the original code
+this means creating another closure, a separate send, and another
+request -> responseText operation.
 
 <pre>
 if(this.options.cssFiles)
@@ -416,13 +416,11 @@ capabilities of Promises, but in general I imagine Promises will be
 most effective in a codebase that unit tests all promise decorated
 functions.
 
-Again, the benefit or Promises is that if your functions
+Again, the benefit of Promises is that if your functions
 pass unit tests with regular arguments, they are guaranteed to work
 with values coming from asynchronous requests!
 
-This is another BIG benefit of Promises. You can unit test your code
-as regular code not as asynchronous code. Regular AJAX style coding
-is painful to unit test.
+*You can unit test your code as regular code not as asynchronous code*. 
 
 h2. Concurrency Issues
 
