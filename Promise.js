@@ -1,27 +1,7 @@
 Array.implement({
-  first: function() {
-    return this[0];
-  },
-  
-  rest: function() {
-    return this.slice(1, this.length);
-  },
-  
-  drop: function(n) {
+  drop: function(n) 
+  {
     return this.slice(n, this.length);
-  },
-  
-  isEmpty: function() {
-    return this.length == 0;
-  },
-  
-  isEqual: function(ary) {
-    if(this.length != ary.length) return false;
-    for(var i = 0; i < this.length; i++)
-    {
-      if(this[i] != ary[i]) return false;
-    }
-    return true;
   }
 });
 
@@ -63,9 +43,16 @@ var Promise = new Class({
   Implements: [Events, Options],
   name: "Promise",
   
-  
-  initialize: function(value, reduce)
+  defaults:
   {
+    lazy: false,
+    reduce: null
+  },
+  
+  initialize: function(value, options)
+  {
+    this.setOptions(options);
+    
     this.__realized = false;
     this.__ops = [];
     
@@ -73,12 +60,12 @@ var Promise = new Class({
     {
       this.initReq(value);
     }
-    else if(value && $type(value) == "array" && reduce && $type(reduce) == "function")
+    else if(value && $type(value) == "array" && this.options.reduce && $type(this.options.reduce) == "function")
     {
       var promises = value.filter(Promise.isPromise);
       var watch = new Group(promises);
       watch.addEvent("realized", function() {
-        this.setValue(reduce.apply(null, value.map(Promise.getValue)));
+        this.setValue(this.options.reduce.apply(null, value.map(Promise.getValue)));
       }.bind(this));
     }
     else if(value)
@@ -175,8 +162,7 @@ Promise.isPromise = function(obj)
   return obj.name == "Promise";
 }
 
-// returns a value if not a promise
-// otherwise unwraps promises until we get to an unrealized one
+
 Promise.getValue = function(v)
 {
   while (Promise.isPromise(v) && v.isRealized())
@@ -230,7 +216,6 @@ Promise.watch = function(args, cb)
   }
   else
   {
-    // convert immediately
     cb(Promise.toValues(args))
   }
 }
