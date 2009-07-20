@@ -1,122 +1,189 @@
 Rationale
 ================================================================================
 
-Dealing with asynchronous requests in a large AJAX application can be
-quite a task and try as you might it often introduces spaghetti code
-in the form of complex callback logic. But asynchronous requests are
-even more nefarious in that they force users who wish to extend your
-code to also have to provide a callback in their interface! For
-example:
+The following is written with MooTools in mind however the Promises
+library has few requirments, it would be quite simple to port it to
+another JavaScript framework as long as the framework supports
+user defined events.
 
-  function displayFoo(value, callback)
+To understand the rationale behind Promises let's look at a few
+problems that crop in many AJAX programs. Imagine that you have six
+resources on your web service: a, b, c, d, e, f. For simplicity's sake
+let's imaginee that these are just json files with the following
+format. For example a.json might look something like the following:
+
+{data: "a"}
+
+Now suppose that you want to make requests for all 6 resources and you
+would like to produce the string "abcdef". If you've done some AJAX
+programming the following requirements should be pretty clear.
+
+1. You need some kind of accumulator to hold the final string.
+2. The requests must be made in correct order for the correct string
+   to be produced.
+
+You code will look something like the following:
+
+  function get(rsrc, callback) 
   {
-    ... some code ...
+    new Request({
+      method: 'get',
+      url: rsrc+'.json',
+      onComplete: callback
+    }).send();
   }
 
-Now in order to extend this function with same functionality and make
-it extendable for others, you have to do something like the following:
-
-  function displayBar(value, callback)
-  {
-    ... some custom code ...
-    displayFoo(value, callback);
-  }
-
-In large application you get an explosion of callbacks. For the next
-example let's look at a common pattern in AJAX applications.
-
-  function bar()
-  {
-    getFoo({... params ...}, handleFoo);
-  }
-
-  function handleFoo(response)
-  {
-    doSomething(response);
-  }
-
-Now AJAX programmers have simply gotten used to this pattern but
-what's happened here is not desirable. We've broken out the logic of
-handleFoo not because we want to, but because we want to maintain
-readability. This is also not composable. That is you cannot change
-the behavior of the result of the aysynchronous call by composing some
-functions together. You have to put any new logic into handleFoo.
-We'll see the implications of this at the end.
-
-Let's look at how you write JavaScript when you're not dealing with
-asynchronous calls. If it wasn't for the callback we would have
-written something like the following:
-
-  function bar()
-  {
-    var result = getFoo({... params ...});
-    doSomething(result);
-  }
-
-Guess what? Promises allow you do exactly this! What does it look like?
-
-  function bar()
-  {
-    var promise = getFoo({... params ...});
-    doSomething(promise);
-  }
-
-Really? The only thing you have to understand when using promises is
-whether a function will return an unrealized value or will need to
-accept an unrealized value. If you think that a function will need
-to be used in this way you decorate it with promise like so.
-
-  var getFoo = function()
-  {
-    ... some code ...
-  }.decorate(promise)
-
-The promise decorator does a couple of fancy things. 
-
-First, of all it doesn't change the behavior of the function. You can
-pass normal arguments to this function and it will work just fine.
-
-Second, if any the arguments to getFoo are unrealized Promise
-instances it will block. getFoo will only execute when all those
-Promises instances have realized their values (sweet isn't it?). This
-works even if the values of the Promises themselves are unrealized
-promises!
-
-Third, if the result of a promise decorated function is a MooTools
-request object it will automatically create a promise and return that.
-
-  var getFoo = function()
-  {
-    return new Request({
-      url: 'foo.json',
-      method: 'get'
+  var result = '';
+  get('a', function(response) {
+    result += JSON.decode(response).data;
+    get('b', function(response) {
+      result += JSON.decode(response).data;
+      get('c', function(response) {
+        result += JSON.decode(response).data;
+        get('d', function(response) {
+          result += JSON.decode(response).data;
+          get('e', function(response) {
+            result += JSON.decode(response).data;
+            get('f', function(response) {
+              result += JSON.decode(response).data;
+              console.log(result);
+            });
+          });
+        });
+      });
     });
-  }.decorate(promise)
+  });
 
-Hmm, this sounds good but when writing code you often want to
-manipulate the result of a function. How can you do that with
-Promises? For example in code we often write something like
-the following:
-
-  function bar()
+Wow this is not very pretty. Before moving on, consider how we would
+write this logic if we were not making asynchronous requests:
+      
+  function get(rsrc)
   {
-    var result = getFoo();
-    result = result + 5;
+    return rsrc;    
   }
 
-With Promises you can accomplish the same thing with:
-
-  function bar()
+  function add(a, b)
   {
-    var p = getFoo();
-    p.op(function(v) {return v+5});
+    return a + b;
   }
 
-A little more typing here, but let's see how much typing Promises
-really save in non-trivial applications.  Let's demonstrate something
-that's difficult to do without promises. For example say we want
-values of 6 different remote resources and we want to add them
-together. With promises it will look something like this.
+  var result = add(get("a"), 
+                   add(get("b"), 
+                       add(get("c"), 
+                           add(get("d"), 
+                               add(get("e"), get("f"))))));
+
+Clearly you don't need such a long winded style if you just want to
+add some characters together.  But imagine that add is a function that
+combines two value of two resources in an interesting way.  In
+anycase, while this is considerably easier on the eyes, for the most
+part this doesn't look so much different structurally than the request
+version.
+
+Some might argue that you should handle this scenario with a bulk
+operations API. That's like arguing that an OpenGL FFI should support
+bulk operations- you're simply moving the complexity to the
+server-side code. It is not being eliminated.
+
+You could use something like Clientcide's Request.Queue, but this
+doesn't do what we want. We have to push Requests onto the queue in
+the order we want them to execute. And we still need to create an
+accumulator via a closure. Compare this to the example above
+where the JavaScript definition of function argument evalution ensures
+the proper order and no accumulator is required.
+
+For a second example let's examine something a little more
+sophisticated, this time let's first consider how we would like to
+write it- that is, not in terms of requests. Assuming get and add are
+as before:
+
+  var a = get("a");
+  var value1 = add(add(a, get("b")), add(add(get("c"), get("d")), a));
+  var value2 = add(a, get("f"));
+
+In this example, value1 should be "abcda", value2 should be "af". 
+
+Converting this to a sequence of requests presents some
+challenges. The simple (and least desirable solution) is to wait for
+all the resources and basically put the final result together in last
+resource request. Why is this bad?
+
+1. This code cannot be decomposed. You have to use it as one big
+   frozen block of functionality.
+2. The computation of value2 must wait for value1!
+
+You could wait for value a, and then put the computation of value1 and
+value2 inside of the callback for the request for a. But suppose you
+decide that you want to use the value of b in the computation of
+value2 as well. Now you need to wait for a and b. In MooTools this can
+be accomplished with the Groups class. But this also means you'll
+need to change get to not call Request.send(). You don't want to miss
+that onComplete event under any circumstances- the event handler has
+to be in place before you make the request.  
+
+But say that while you are prototyping you realize the computation of the
+value "af" is needed elsewhere. Damn. You can't reuse the code you've
+written here because the computation of value2 cannot placed in it's
+own function without duplicating code- the waiting logic for a and b
+that is shared by the computing of value1 and value2. As your
+requirements become more complex your code won't scale.
+
+This clearly illustrates that traditional style AJAX requests cannot
+be composed. 
+
+Which leaves one to wonder? Can something be done about this or are
+we doomed to write complex hard to maintain callbacks. Another
+downside about callback is that they force people who wish to extend
+your code with the intention of making their own code extendable will
+have to provide a callback argument in their function
+interface. There's no way to solve this, callback's on function
+interfaces are viral!
+
+Hmm...
+
+Is it impossible that requests can be written in such a way that we
+can compose them? While there have been several attempts to do such a
+thing many of the solutions require the programmer to adopt a library
+that is painfully "non-webby" or one that transforms your JavaScript
+into a fairly undebuggable form.
+
+Promises provide a simple JavaScript-ish solution to this problem that
+is easy to port to other JavaScript libraries (Prototype, jQuery,
+etc.).
+
+So what are Promises? Promises are objects that represent unrealized
+values. They encapsulate the request. When you request the value of
+resource a, a Promise will fetch that resource and fire an event
+"realized" with its realized value when the request is complete.
+
+Now by itself this doesn't sound very useful. It's just a wrapper around
+Request that doesn't do anything. This is where decorators come in. I
+suggest reading the following article about decorators in
+Python. 
+
+Basically a decorator simply wraps a functions with new
+functionality.  Decorators can be used for handy things like type
+checking a arguments to a functions, JSON.encoding all of a function's
+return values, etc.
+
+The Promises library provides a decorate called promise that does something very
+intersting:
+
+1. If a function returns a Request instance it will automatically be
+   converted into a Promise. This does not mean a request will be
+   made. Promises are "lazy". They will not be realized unless they
+   cross the function interface of a promise decorated function.
+
+2. A function arguments will checked to see if any unrealized Promises
+   were passed. If so, the function blocks until those Promises have
+   been realized. If a realized Promises returns an unrealized Promise
+   as a value, the function will continue to block.
+
+3. This means all arguments inside of promise decorated function will
+   be guaranteed to be realized. The upside is that you call these
+   functions with non-Promise arguments and they will work just fine.
+
+Enough talk, here's an example:
 
   var get = function(rsrc) 
   {
@@ -140,42 +207,13 @@ together. With promises it will look something like this.
   show(fnB(fnB(fnB(fnB(fnB(get('a'), 'b'), 'c'), 'd'), 'e'), 'f'))
 
 Notice we have no callbacks. When we run this code will print "abcdef"
-to JavaScript console. In traditional AJAX programming there is just
-no way to express the above succintly or in a composable manner. What
-you have to do looks something like the following.
+to the JavaScript console. In traditional AJAX programming there is just
+no way to express the above succintly.
 
-  function get(rsrc, callback) 
-  {
-    new Request({
-      method: 'get',
-      url: rsrc+'.json',
-      onComplete: callback
-    }).send();
-  }
+Also note the use of Promise.op.
 
-  function show(arg)
-  {
-    console.log(arg);
-  }
-
-  var result = '';
-  get('a', function(response) {
-    result += JSON.decode(response).data;
-    get('b', function(response) {
-      result += JSON.decode(response).data;
-      get('c', function(response) {
-        result += JSON.decode(response).data;
-        get('d', function(response) {
-          result += JSON.decode(response).data;
-          get('e', function(response) {
-            result += JSON.decode(response).data;
-            get('f', function(response) {
-              result += JSON.decode(response).data;
-              show(result);
-            });
-          });
-        });
-      });
-    });
-  });
-				   
+1. Promise.op allows you to modify the value of a Promise.
+2. If a Promise is unrealized Proimse.op returns the Promise.
+3. If realized Promise.op returns the value after the op is applied.
+4. Before the Promise fires it's realized event all ops that were
+   queued up will be applied first.
