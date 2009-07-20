@@ -11,9 +11,9 @@ resources on your web service: a, b, c, d, e, f. For simplicity's sake
 let's imaginee that these are just json files with the following
 format. For example a.json might look something like the following:
 
-<code>
+<pre>
 {data: "a"}
-</code>
+</pre>
 
 Now suppose that you want to make requests for all 6 resources and you
 would like to produce the string "abcdef". If you've done some AJAX
@@ -60,7 +60,7 @@ get('a', function(response) {
 Wow this is not very pretty. Before moving on, consider how we would
 write this logic if we were not making asynchronous requests:
 
-<code>      
+<pre>      
 function get(rsrc)
 {
   return rsrc;    
@@ -76,7 +76,7 @@ var result = add(get("a"),
                      add(get("c"), 
                          add(get("d"), 
                              add(get("e"), get("f"))))));
-</code>
+</pre>
 
 Clearly you don't need such a long winded style if you just want to
 add some characters together.  But imagine that add is a function that
@@ -102,9 +102,11 @@ sophisticated, this time let's first consider how we would like to
 write it- that is, not in terms of requests. Assuming get and add are
 as before:
 
-  var a = get("a");
-  var value1 = add(add(a, get("b")), add(add(get("c"), get("d")), a));
-  var value2 = add(a, get("f"));
+<pre>
+var a = get("a");
+var value1 = add(add(a, get("b")), add(add(get("c"), get("d")), a));
+var value2 = add(a, get("f"));
+</pre>
 
 In this example, value1 should be "abcda", value2 should be "af". 
 
@@ -113,9 +115,9 @@ challenges. The simple (and least desirable solution) is to wait for
 all the resources and basically put the final result together in last
 resource request. Why is this bad?
 
-1. This code cannot be decomposed. You have to use it as one big
+** This code cannot be decomposed. You have to use it as one big
    frozen block of functionality.
-2. The computation of value2 must wait for value1!
+** The computation of value2 must wait for value1!
 
 You could wait for value a, and then put the computation of value1 and
 value2 inside of the callback for the request for a. But suppose you
@@ -174,42 +176,34 @@ return values, etc.
 The Promises library provides a decorate called promise that does something very
 intersting:
 
-1. If a function returns a Request instance it will automatically be
-   converted into a Promise. This does not mean a request will be
-   made. Promises are "lazy". They will not be realized unless they
-   cross the function interface of a promise decorated function.
-
-2. A function arguments will checked to see if any unrealized Promises
-   were passed. If so, the function blocks until those Promises have
-   been realized. If a realized Promises returns an unrealized Promise
-   as a value, the function will continue to block.
-
-3. This means all arguments inside of promise decorated function will
-   be guaranteed to be realized. The upside is that you call these
-   functions with non-Promise arguments and they will work just fine.
+# If a function returns a Request instance it will automatically be converted into a Promise. This does not mean a request will be made. Promises are "lazy". They will not be realized unless they cross the function interface of a promise decorated function.
+# A function arguments will checked to see if any unrealized Promises were passed. If so, the function blocks until those Promises have been realized. If a realized Promises returns an unrealized Promise as a value, the function will continue to block.
+# This means all arguments inside of promise decorated function will be guaranteed to be realized. The upside is that you call these functions with non-Promise arguments and they will work just fine.
 
 Enough talk, here's an example:
 
-  var get = function(rsrc) 
-  {
-    return new Request({
-      method: 'get',
-      url: rsrc+'.json'
-    });
-  }.decorate(promise)
+<pre>
+var get = function(rsrc) 
+{
+  return new Request({
+    method: 'get',
+    url: rsrc+'.json'
+  });
+}.decorate(promise)
 
-  var fnB = function(a, b)
-  {
-    var p = get(b);
-    return p.op(function(value) { return a + value; });
-  }.decorate(promise)
+var fnB = function(a, b)
+{
+  var p = get(b);
+  return p.op(function(value) { return a + value; });
+}.decorate(promise)
 
-  var show = function show(arg)
-  {
-    console.log(arg);
-  }.decorate(promise)
+var show = function show(arg)
+{
+  console.log(arg);
+}.decorate(promise)
 
-  show(fnB(fnB(fnB(fnB(fnB(get('a'), 'b'), 'c'), 'd'), 'e'), 'f'))
+show(fnB(fnB(fnB(fnB(fnB(get('a'), 'b'), 'c'), 'd'), 'e'), 'f'))
+</pre>
 
 Notice we have no callbacks. When we run this code will print "abcdef"
 to the JavaScript console. In traditional AJAX programming there is just
@@ -217,18 +211,13 @@ no way to express the above succintly.
 
 Also note the use of Promise.op.
 
-1. Promise.op allows you to modify the value of a Promise.
-
-2. If a Promise is unrealized Proimse.op returns the Promise.
-
-3. If realized Promise.op returns the value after the op is applied.
-
-4. Before the Promise fires it's realized event all ops that were
+# Promise.op allows you to modify the value of a Promise.
+# If a Promise is unrealized Proimse.op returns the Promise.
+# If realized Promise.op returns the value after the op is applied.
+# Before the Promise fires it's realized event all ops that were
    queued up will be applied first.
 
-
-Other Notes & Caveats
----------------------
+h1. Other Notes & Caveats
 
 There are some debugging dangers to take note of when using
 promises. If you've done any programming in a language that supports
