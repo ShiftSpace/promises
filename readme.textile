@@ -6,9 +6,9 @@ another JavaScript framework as long as the framework supports
 user defined events.
 
 To understand the rationale behind Promises let's look at a few
-problems that crop in many AJAX programs. Imagine that you have six
+problems that crop up in many AJAX programs. Imagine that you have six
 resources on your web service: a, b, c, d, e, f. For simplicity's sake
-let's imaginee that these are just json files with the following
+let's imagine that these are just json files with the following
 format. For example a.json might look something like the following:
 
 <pre>
@@ -20,8 +20,7 @@ would like to produce the string "abcdef". If you've done some AJAX
 programming the following requirements should be pretty clear.
 
 # You need some kind of accumulator to hold the final string.
-# The requests must be made in correct order for the correct string
-   to be produced.
+# The requests must be made in correct order.
 
 You code will look something like the following:
 
@@ -79,28 +78,31 @@ var result = add(get("a"),
 </pre>
 
 Clearly you don't need such a long winded style if you just want to
-add some characters together.  But imagine that add is a function that
-combines two value of two resources in an interesting way.  In
-anycase, while this is considerably easier on the eyes, for the most
-part this doesn't look so much different structurally than the request
-version.
+add some characters together- you can concatenate strings with +. But
+let's pretend for now that add is a function that combines two value
+of two resources in an interesting way.  In anycase, while this is
+considerably easier on the eyes, for the most part this doesn't look
+so much different structurally than the request version.
 
 Some might argue that you should handle this scenario with a bulk
-operations API. That's like arguing that an OpenGL FFI should support
-bulk operations- you're simply moving the complexity to the
+operations API. I think this is like arguing that an OpenGL FFI should
+support bulk operations- you're simply moving the complexity to the
 server-side code. It is not being eliminated.
 
-You could use something like Clientcide's Request.Queue, but this
-doesn't do what we want. We have to push Requests onto the queue in
-the order we want them to execute. And we still need to create an
-accumulator via a closure. Compare this to the example above
-where the JavaScript definition of function argument evalution ensures
-the proper order and no accumulator is required.
+Another approach is that you could use something like Clientcide's
+Request.Queue, but this also doesn't really do what we want. We have
+to push Requests onto the queue in the order we want them to
+execute. And we still need to create an accumulator via a
+closure. 
+
+Compare this to the example above where the JavaScript definition of
+function argument evalution ensures the proper order and no
+accumulator via a closure is required.
 
 For a second example let's examine something a little more
-sophisticated, this time let's first consider how we would like to
-write it- that is, not in terms of requests. Assuming get and add are
-as before:
+sophisticated, this time let's consider how we would like to write the
+program logic- that is, not in terms of requests. Assuming get and add
+are as before:
 
 <pre>
 var a = get("a");
@@ -112,81 +114,97 @@ In this example, value1 should be "abcda", value2 should be "af".
 
 Converting this to a sequence of requests presents some
 challenges. The simple (and least desirable solution) is to wait for
-all the resources and basically put the final result together in last
-resource request. Why is this bad?
+all the resources put the final result together in last resource
+request. Why is this bad?
 
 # This code cannot be decomposed. You have to use it as one big
-   frozen block of functionality.
-# The computation of value2 must wait for value1!
+   frozen block of functionality. Meh.
+# The computation of value2 must wait for value1! Meh.
 
-You could wait for value a, and then put the computation of value1 and
+You could wait for value a and then put the computation of value1 and
 value2 inside of the callback for the request for a. But suppose you
 decide that you want to use the value of b in the computation of
-value2 as well. Now you need to wait for a and b. In MooTools this can
-be accomplished with the Groups class. But this also means you'll
-need to change get to not call Request.send(). You don't want to miss
-that onComplete event under any circumstances- the event handler has
-to be in place before you make the request.  
+value2 as well. Now you need to wait for a *and* b. In MooTools this
+can be accomplished with the Groups class. But this also means you'll
+need to change the get function to not call Request.send(). 
+
+Why is that? You do not want to miss that onComplete event under any
+circumstances- the event handler has to be in place before you make
+the request. So get can only return the Request object not send
+it. You now have send the request yourself after you've set up your
+Group on all the Requests that you care about.
 
 But say that while you are prototyping you realize the computation of the
-value "af" is needed elsewhere. Damn. You can't reuse the code you've
+value2, "af", is needed elsewhere. Damn. You can't reuse the code you've
 written here because the computation of value2 cannot placed in it's
 own function without duplicating code- the waiting logic for a and b
-that is shared by the computing of value1 and value2. As your
-requirements become more complex your code won't scale.
+that is shared by both the computation of value1 and value2. Wow, as your
+requirements become more complex your code will become harder and harder
+to maintain.
 
 This clearly illustrates that traditional style AJAX requests cannot
 be composed. 
 
-Which leaves one to wonder? Can something be done about this or are
-we doomed to write complex hard to maintain callbacks. Another
-downside about callback is that they force people who wish to extend
-your code with the intention of making their own code extendable will
-have to provide a callback argument in their function
-interface. There's no way to solve this, callback's on function
-interfaces are viral!
+Which leaves one to wonder? Can anything be done about this or are we
+doomed to write complex hard to maintain spaghetti callback
+code. Before we consider the solution take note of another downside of
+callback oriented AJAX requests. 
+
+Suppose a developer using your library wishes to extend your code with
+the intention of making their own code extendable. Because your
+function interface provides a callback to deliver the result of the
+computation , his/her code *will also* have to provide a callback
+argument in his/her function interface in order to deliver a result to
+user's of this library extension. There's no way to solve this,
+callback's on function interfaces are viral!
 
 Hmm...
 
-Is it impossible that requests can be written in such a way that we
-can compose them? While there have been several attempts to do such a
-thing many of the solutions require the programmer to adopt a library
-that is painfully "non-webby" or one that transforms your JavaScript
-into a fairly undebuggable form.
+Now that we understand the problem space, how does one go about
+solving this? Is it just impossible for requests to be written in such a
+way that we can compose them? 
 
-Promises provide a simple JavaScript-ish solution to this problem that
-is easy to port to other JavaScript libraries (Prototype, jQuery,
-etc.).
+While there have been several attempts to do such a thing many of the
+solutions require the programmer to adopt a library that is painfully
+"non-webby" or one that transforms your JavaScript into a fairly
+undebuggable form.
+
+Here's where Promises comes in.  Promises provide a simple
+JavaScript-ish solution to this problem that is easy to port to other
+JavaScript libraries (Prototype, jQuery, etc.). You'll need to rethink
+how you organize your AJAX logic but I think that it presents
+significant advantages for code that is request heavy.
 
 So what are Promises? Promises are objects that represent unrealized
 values. They encapsulate the request. When you request the value of
-resource a, a Promise will fetch that resource and fire an event
+resource *foo*, a Promise will fetch that resource and fire an event
 "realized" with its realized value when the request is complete.
 
 Now by itself this doesn't sound very useful. It's just a wrapper around
 Request that doesn't do anything. This is where decorators come in. I
 suggest reading the following article about decorators in
-Python. 
+Python- [url]
 
 Basically a decorator simply wraps a functions with new
 functionality.  Decorators can be used for handy things like type
-checking a arguments to a functions, JSON.encoding all of a function's
-return values, etc.
+checking arguments to a function, JSON.encoding all of a function's
+return values, etc. They about a powerful a construct you can have
+without full blown Lisp macros.
 
-The Promises library provides a decorate called promise that does something very
-intersting:
+In addition to the Promises class the Promises library provides a
+decorator called *promise* that does a few interesting things:
 
 # If a function returns a Request instance it will automatically be
   converted into a Promise. This does not mean a request will be
   made. Promises are "lazy". They will not be realized unless they
-  cross the function interface of a promise decorated function.
+  cross the function interface of another promise decorated function.
 # A function arguments will checked to see if any unrealized Promises
-  were passed. If so, the function blocks until those Promises have
-  been realized. If a realized Promises returns an unrealized Promise
+  were passed in. If so, the function blocks until those Promises have
+  been realized. If a realized Promise returns an unrealized Promise
   as a value, the function will continue to block.
 # This means all arguments inside of promise decorated function will
   be guaranteed to be realized. The upside is that you call these
-  functions with non-Promise arguments and they will work just fine.
+  functions with non-Promise arguments and they will work just fine!
 
 Enough talk, here's an example:
 
@@ -213,9 +231,27 @@ var show = function show(arg)
 show(fnB(fnB(fnB(fnB(fnB(get('a'), 'b'), 'c'), 'd'), 'e'), 'f'))
 </pre>
 
-Notice we have no callbacks. When we run this code will print "abcdef"
-to the JavaScript console. In traditional AJAX programming there is just
-no way to express the above succintly.
+Notice we have no callbacks. Yes this code makese 6 simultaneous
+Requests. We don't have to queue them.  When we run this code will
+print "abcdef" to the JavaScript console. In traditional AJAX
+programming there is just no way to express the above succintly.
+
+The get function because it has been decorated with promise will
+convert the request into a Promise instance. It will not call the 
+request until this instance crosses the function interface of a
+function that has also be decorated by promise- fnB for example.
+
+<pre>
+fnB(get('a'), 'b')
+</pre>
+
+Send the result of <code>get('a')</code> to fnB will force the Promise
+instance to be realized. However since it fnB is blocking it returns
+a Promise for it's return value. Note that the above logic means that
+a lot of Promise instances are generated. For completeness fnB itself
+returns a Promise when it runs! The Promise decorator is smart enough
+to see that the function returned a value that is itself a promise, it
+will continue to block until it can get a real value.
 
 Also note the use of Promise.op.
 
@@ -225,76 +261,10 @@ Also note the use of Promise.op.
 # Before the Promise fires it's realized event all ops that were
    queued up will be applied first.
 
-h1. Other Notes & Caveats
+This might seem overly complex, but consider the following real world
+example.
 
-There are some debugging dangers to take note of when using
-promises. If you've done any programming in a language that supports
-lazy datastructures you know the kind of trouble you can get
-to. 
-
-You might find that errors occur in places much further down
-the line then you'd expect. I'll try to improve the error reporting
-capabilities of Promises, but in general I imagine Promises will be
-most effective in a codebase that unit tests promise decorated
-functions. 
-
-Again, the benefit or Promises is that if your functions
-pass unit tests with regular arguments, they are guaranteed to work
-with values coming from asynchronous requests!
-
-This is another BIG benefit of Promises. You can unit test your code
-as regular code not as asynchronous code.
-
-Be careful of modifying a promise via op after you've passed it on to
-another function. JavaScript is mutable language- if you give ops to a
-Promise after you've handed it, you find that you get very weird
-results from your functions. If you treats Promises as immutable
-quantities you'll avoid monstrous bugs in your code as well as have a
-robust full concurrent client side JavaScript application.
-
-Rules of thumb:
-
-# At the creation site of Promise you can modify the Promise at will.
-# As soon as Promise is sent to another function, you call op at your peril.
-
-Another thing to watch out for is that code that uses promises is not
-deterministic. You have to be aware of that fact when using functions
-that return promises:
-
-<pre>
-var MyClass = new Class({
-
-  loadResource: function(rsrc)
-  {
-    return new Request({
-       url: ...,
-       method: 'get'
-    });
-  }.decorate(promise),
-
-  doA: funtion()
-  {
-  }.decorate(promise),
-
-  doB: function()
-  {
-  }.decorate(proimse),
-
-  myMethod: function() 
-  {
-    this.doA(this.loadResource(...));
-    this.doB(this.loadResource(...));
-  }
-
-})
-</pre>
-
-doA should not depend on the behavior of doB at all. When coding without
-promises you would know that if you changed something in doA that
-change would appear doB because you called doA first. Using promises
-is very much like writing code with threads. You have no such guarantees.
-
-h1. Use Cases
+h1. Real World Example
 
 h2. Without Promises
  
@@ -372,12 +342,14 @@ var MyClass = new Class({
 );
 </pre>
 
+The Promises version here has several advantages. 
 
-The Promises version here has several advantages. We don't need to use
-Group. We don't need to send the requests after the addition of the
-onComplete handler. We don't need to create a closure to map the
-requests to their responseText values. We don't need to call show in
-two different locations. 
+# We don't need to use Group. 
+# We don't need to send the requests after the addition of the
+onComplete handler. 
+# We don't need to create a closure to map the requests to their
+responseText values. 
+# We don't need to call show in two different locations.
 
 Now imagine that you decide that show needs to take another
 asynchronous parameter- like an html fragment. This means creating
@@ -388,18 +360,18 @@ operation.
 if(this.options.cssFiles)
 {
   var reqs = this.options.cssFiles.map(this.getFile.bind(this));
-  var html = this.getFile("foo.html"); // need a closure
-  reqs.push(html); // add it to the requests list
+  var html = this.getFile("foo.html");                                // Change 1: need a closure
+  reqs.push(html);                                                    // Change 2: add it to the requests list
   var group = new Group(reqs);
   group.addEvent('onComplete', function() {
     this.show(reqs.map(function(req) { return req.responseText; }),
-    html.responseText); // need to convert to responseText
+    html.responseText);                                               // Change 3: need to convert to responseText
   }.bind(this);
   reqs.each(function(req) { req.send(); });
 }
 </pre>
 
-With Promises this will require only adding a single line.
+With Promises this will require only modifying a single line.
 
 <pre>
 var p = null;
@@ -411,13 +383,77 @@ if(this.options.cssFiles)
 this.show(p, this.getFile("foo.html")); // the only change
 </pre>
 
-Hopefully you're beginning to see that regular requests cannot be composed
-and Promises can. Without Promises you have to manage a lot of request
-logic by hand.
+Hopefully yout beginning to see that regular requests cannot be composed
+and Promises can.
 
+h1. Other Notes & Caveats
 
+There are some debugging dangers to take note of when using
+promises. If you've done any programming in a language that supports
+lazy data structures you know the kind of trouble you can get
+to.
 
+You might find that errors occur in places much further down the line
+then you'd normally expect. I'll try to improve the error reporting
+capabilities of Promises, but in general I imagine Promises will be
+most effective in a codebase that unit tests all promise decorated
+functions.
 
-    
+Again, the benefit or Promises is that if your functions
+pass unit tests with regular arguments, they are guaranteed to work
+with values coming from asynchronous requests!
 
-     
+This is another BIG benefit of Promises. You can unit test your code
+as regular code not as asynchronous code.
+
+Be careful of modifying a promise via Promise.op after you've passed
+it onto another function. JavaScript is mutable language- if you give
+ops to a Promise after it's crossed a function interface, you'll find
+that you get very inconsistent results. If you mostly treat Promises as
+immutable values you'll avoid monstrous bugs in your code.
+
+Rules of thumb about modifying Promises via Promise.op:
+
+# At the creation site of a Promise instance you can modify the
+  instance at will.
+# As soon as Promise is sent to another function, you call op at your
+  own peril.
+
+Another thing to watch out for is that code that uses Promises is not
+deterministic. You have to be aware of that fact when using functions
+that return promises. Consider the following flawed example:
+
+<pre>
+var MyClass = new Class({
+
+  loadResource: function(rsrc)
+  {
+    return new Request({
+       url: ...,
+       method: 'get'
+    });
+  }.decorate(promise),
+
+  doA: funtion(rsrc)
+  {
+    this.x = rsrc;
+  }.decorate(promise),
+
+  doB: function(rsrc)
+  {
+    this.y = this.x + rsrc;              // assumption that doA completed first
+  }.decorate(proimse),
+
+  myMethod: function() 
+  {
+    this.doA(this.loadResource(...));
+    this.doB(this.loadResource(...));
+  }
+
+})
+</pre>
+
+doB should not depend on the behavior of doA at all. Without Promises
+if you changed something in doA that change would appear in doB because
+you called doA first. However, using Promises is very much like writing code
+with threads. You have no such guarantees.
