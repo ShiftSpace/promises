@@ -25,7 +25,7 @@ programming the following requirements should be pretty clear.
 
 You code will look something like the following:
 
-<code>
+<pre>
 function get(rsrc, callback) 
 {
   new Request({
@@ -55,7 +55,7 @@ get('a', function(response) {
     });
   });
 });
-</code>
+</pre>
 
 Wow this is not very pretty. Before moving on, consider how we would
 write this logic if we were not making asynchronous requests:
