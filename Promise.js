@@ -45,13 +45,13 @@ var Promise = new Class({
   
   defaults:
   {
-    lazy: false,
+    lazy: true,
     reduce: null
   },
   
   initialize: function(value, options)
   {
-    this.setOptions(options);
+    this.setOptions(this.defaults, options);
     
     this.__realized = false;
     this.__ops = [];
@@ -81,7 +81,13 @@ var Promise = new Class({
     req.addEvent('onComplete', function(responseText) {
       this.setValue(this.applyOps(JSON.decode(responseText).data));
     }.bind(this));
-    req.send();
+    if(!this.options.lazy) req.send();
+  },
+  
+  
+  realize: function()
+  {
+    if(this.__req) this.__req.send();
   },
   
   
@@ -201,6 +207,7 @@ Promise.watch = function(args, cb)
   if(unrealized.length > 0)
   {
     var watching = new Group(unrealized);
+    unrealized.each($msg('realize'));
   
     watching.addEvent('realized', function() {
       args = args.map(Promise.getValue);
