@@ -248,8 +248,9 @@ function promise(fn)
     var args = $A(arguments);
 
     var promises = args.filter(Promise.isPromise);
+    var unrealized = promises.filter($msg('isNotRealized'));
     
-    if(promises.length > 0)
+    if(unrealized.length > 0)
     {
       var p = new Promise();
       
@@ -261,7 +262,7 @@ function promise(fn)
     }
     else
     {
-      var porv = Promise.promiseOrValue(fn.apply(this, args));
+      var porv = Promise.promiseOrValue(fn.apply(this, args.map(Promise.getValue)));
       return porv;
     }
   }
