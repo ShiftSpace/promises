@@ -293,80 +293,80 @@ is very much like writing code with threads. You have no such guarantees.
 Use Cases
 ---------
 
-   Without Promises
-   ----------------
+  Without Promises
+  ----------------
+ 
+  var MyClass = new Class({
+ 
+    initialize: function(el, options)
+    {
+      this.setOptions(...);
+      
+      if(this.options.cssFiles)
+      {
+        var reqs = this.options.cssFiles.map(this.getFile.bind(this));
+        var group = new Group(reqs);
+        group.addEvent('onComplete', function() {
+          this.show(reqs.map(function(req) { return req.responseText; }));
+        }.bind(this);
+        reqs.each(function(req) { req.send(); });
+      }
+      else
+      {
+        this.show();
+      }
+    },
+ 
+    getFile: function(url)
+    {
+      return new Request({
+        url: url,
+        method: 'get'
+      });
+    },
+ 
+    show: function(cssFiles)
+    {
+      if(css) this.addCssFiles(cssFiles);
+      ...
+    }
 
-   var MyClass = new Class({
+ });
 
-     initialize: function(el, options)
+
+ With Promises
+ -------------
+ 
+ var MyClass = new Class({
+ 
+   initialize: function(el, options)
+   {
+     this.setOptions(...);
+     
+     var p = null;
+     if(this.options.cssFiles)
      {
-        this.setOptions(...);
-
-	if(this.options.cssFiles)
-        {
-	  var reqs = this.options.cssFiles.map(this.getFile.bind(this));
-          var group = new Group(reqs);
-          group.addEvent('onComplete', function() {
-	    this.show(reqs.map(function(req) { return req.responseText; }));
-          }.bind(this);
-          reqs.each(function(req) { req.send(); });
-        }
-        else
-        {
-          this.show();
-        }
-     },
-
-     getFile: function(url)
-     {
-       return new Request({
-         url: url,
-         method: 'get'
-       });
-     },
-
-     show: function(cssFiles)
-     {
-        if(css) this.addCssFiles(cssFiles);
-        ...
+        p = new Promise(this.options.cssFiles.map(this.getFile));
      }
-
-  });
-
-
-   With Promises
-   -------------
-
-   var MyClass = new Class({
-
-     initialize: function(el, options)
-     {
-        this.setOptions(...);
-
-	var p = null;
-	if(this.options.cssFiles)
-        {
-           p = new Promise(this.options.cssFiles.map(this.getFile));
-        }
-
-	this.show(p);
-     },
-
-     getFile: function(url)
-     {
-       return new Request({
-         url: url
-         method: 'get'
-       });
-     }.decorate(promise),
-
-     show: function(cssFiles)
-     {
-        if(css) this.addCSS(cssFiles);
-        ...
-     }.decorate(promise)
-  
-  });
+     
+     this.show(p);
+   },
+ 
+   getFile: function(url)
+   {
+     return new Request({
+       url: url
+       method: 'get'
+     });
+   }.decorate(promise),
+ 
+   show: function(cssFiles)
+   {
+      if(css) this.addCSS(cssFiles);
+      ...
+   }.decorate(promise)
+ 
+ );
 
 
 The Promises version here has several advantages. We don't need to use
@@ -389,7 +389,7 @@ operation.
     var group = new Group(reqs);
     group.addEvent('onComplete', function() {
       this.show(reqs.map(function(req) { return req.responseText; }),
-  html.responseText); // need to convert to responseText
+      html.responseText); // need to convert to responseText
     }.bind(this);
     reqs.each(function(req) { req.send(); });
   }
