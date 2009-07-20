@@ -11,7 +11,7 @@ Function.implement({
   {
     var decorators = $A(arguments);
     var resultFn = this;
-    decorator = decorators.pop();
+    var decorator = decorators.pop();
     
     while(decorator)
     {
