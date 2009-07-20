@@ -19,60 +19,64 @@ Now suppose that you want to make requests for all 6 resources and you
 would like to produce the string "abcdef". If you've done some AJAX
 programming the following requirements should be pretty clear.
 
-1. You need some kind of accumulator to hold the final string.
-2. The requests must be made in correct order for the correct string
+** You need some kind of accumulator to hold the final string.
+** The requests must be made in correct order for the correct string
    to be produced.
 
 You code will look something like the following:
 
-  function get(rsrc, callback) 
-  {
-    new Request({
-      method: 'get',
-      url: rsrc+'.json',
-      onComplete: callback
-    }).send();
-  }
+<code>
+function get(rsrc, callback) 
+{
+  new Request({
+    method: 'get',
+    url: rsrc+'.json',
+    onComplete: callback
+  }).send();
+}
 
-  var result = '';
-  get('a', function(response) {
+var result = '';
+get('a', function(response) {
+  result += JSON.decode(response).data;
+  get('b', function(response) {
     result += JSON.decode(response).data;
-    get('b', function(response) {
+    get('c', function(response) {
       result += JSON.decode(response).data;
-      get('c', function(response) {
+      get('d', function(response) {
         result += JSON.decode(response).data;
-        get('d', function(response) {
+        get('e', function(response) {
           result += JSON.decode(response).data;
-          get('e', function(response) {
+          get('f', function(response) {
             result += JSON.decode(response).data;
-            get('f', function(response) {
-              result += JSON.decode(response).data;
-              console.log(result);
-            });
+            console.log(result);
           });
         });
       });
     });
   });
+});
+</code>
 
 Wow this is not very pretty. Before moving on, consider how we would
 write this logic if we were not making asynchronous requests:
-      
-  function get(rsrc)
-  {
-    return rsrc;    
-  }
 
-  function add(a, b)
-  {
-    return a + b;
-  }
+<code>      
+function get(rsrc)
+{
+  return rsrc;    
+}
 
-  var result = add(get("a"), 
-                   add(get("b"), 
-                       add(get("c"), 
-                           add(get("d"), 
-                               add(get("e"), get("f"))))));
+function add(a, b)
+{
+  return a + b;
+}
+
+var result = add(get("a"), 
+                 add(get("b"), 
+                     add(get("c"), 
+                         add(get("d"), 
+                             add(get("e"), get("f"))))));
+</code>
 
 Clearly you don't need such a long winded style if you just want to
 add some characters together.  But imagine that add is a function that
