@@ -301,11 +301,14 @@ Use Cases
      initialize: function(el, options)
      {
         this.setOptions(...);
+
 	if(this.options.cssFiles)
         {
-	  var reqs = this.getCssFiles(cssFiles);
+	  var reqs = this.options.cssFiles.map(this.getFile.bind(this));
           var group = new Group(reqs);
-          group.addEvent('onComplete', this.show.bind(this))
+          group.addEvent('onComplete', function() {
+	    this.show(reqs.map(function(req) { return req.responseText; }));
+          }.bind(this);
           reqs.each(function(req) { req.send(); });
         }
         else
@@ -314,13 +317,11 @@ Use Cases
         }
      },
 
-     getCssFiles: function(cssFiles)
+     getFile: function(url)
      {
-       return cssFiles.map(function(cssFile) {
-         return new Request({
-           url: cssFiles,
-           method: 'get'
-         });
+       return new Request({
+         url: url,
+         method: 'get'
        });
      },
 
@@ -341,27 +342,75 @@ Use Cases
      initialize: function(el, options)
      {
         this.setOptions(...);
-	this.show([this.getCSS("A"), this.getCSS("B")]);
+
+	var p = null;
+	if(this.options.cssFiles)
+        {
+           p = new Promise(this.options.cssFiles.map(this.getFile));
+        }
+
+	this.show(p);
      },
 
-     getCSS: function()
+     getFile: function(url)
      {
-       if(this.options.css)
-       {
-          return new Request({
-             url: this.option.css,
-             method: 'get'
-          });
-       }
+       return new Request({
+         url: url
+         method: 'get'
+       });
      }.decorate(promise),
 
-     show: function(css)
+     show: function(cssFiles)
      {
-        if(css) this.addCSS();
+        if(css) this.addCSS(cssFiles);
         ...
      }.decorate(promise)
-
+  
   });
+
+
+The Promises version here has several advantages. We don't need to use
+Group. We don't need to send the requests after the addition of the
+onComplete handler. We don't need to create a closure to map the
+requests to their responseText values. We don't need to call show in
+two different locations. 
+
+Now imagine that you decide that show needs to take another
+asynchronous parameter- like an html fragment. This means creating
+another closure, a separate send, and another request -> responseText
+operation. 
+
+
+  if(this.options.cssFiles)
+  {
+    var reqs = this.options.cssFiles.map(this.getFile.bind(this));
+    var html = this.getFile("foo.html"); // need a closure
+    reqs.push(html); // add it to the requests list
+    var group = new Group(reqs);
+    group.addEvent('onComplete', function() {
+      this.show(reqs.map(function(req) { return req.responseText; }),
+  html.responseText); // need to convert to responseText
+    }.bind(this);
+    reqs.each(function(req) { req.send(); });
+  }
+
+
+With Promises this will require only adding a single line.
+
+
+  var p = null;
+  if(this.options.cssFiles)
+  {
+    p = new Promise(this.options.cssFiles.map(this.getFile));
+  }
+  
+  this.show(p, this.getFile("foo.html")); // the only change
+
+
+Hopefully you're beginning to see that regular requests cannot be composed
+and Promises can. Without Promises you have to manage a lot of request
+logic by hand.
+
 
 
 
