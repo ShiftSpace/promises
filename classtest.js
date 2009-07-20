@@ -1,4 +1,3 @@
-/*
 window.addEvent('domready', ctinit);
 
 
@@ -21,8 +20,11 @@ var MyClass = new Class({
   
   add: function()
   {
-    return new Promise([this.a(), this.b()], function(a, b) {
-      return a + b;
+    return new Promise([this.a(), this.b()], {
+      reduce: function(a, b) 
+      {
+        return a + b;
+      }
     });
   }.decorate(promise)
 });
@@ -30,7 +32,7 @@ var MyClass = new Class({
 
 var ctshow = function(value)
 {
-  console.log("show: " + value);
+  console.log("class test show: " + value);
 }.decorate(promise)
 
 
@@ -40,4 +42,3 @@ function ctinit()
   var instance = new MyClass();
   ctshow(instance.add());
 }
-*/

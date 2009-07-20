@@ -60,12 +60,12 @@ var Promise = new Class({
     {
       this.initReq(value);
     }
-    else if(value && $type(value) == "array" && this.options.reduce && $type(this.options.reduce) == "function")
+    else if(value && $type(value) == "array")
     {
-      var promises = value.filter(Promise.isPromise);
-      var watch = new Group(promises);
-      watch.addEvent("realized", function() {
-        this.setValue(this.options.reduce.apply(null, value.map(Promise.getValue)));
+      Promise.watch(value, function(promises) {
+        var values = promises.map(Promise.getValue);
+        var result = (this.options.reduce && this.options.reduce.apply(null, values)) || values;
+        this.setValue(result);
       }.bind(this));
     }
     else if(value)

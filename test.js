@@ -46,6 +46,7 @@ function init()
   show(addFn(addFn(p1, " "), p2)); // abdCf abcdef, probably print last, has to wait on two promises
   show("Aren't promises neat?"); // will probably print first
   show(p4);
+  show(null);
   
   p1.addEvent('realized', function(v) { // will probably print second
     show(v);

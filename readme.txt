@@ -289,3 +289,82 @@ doA should not depend on the behavior of doB at all. When coding without
 promises you would know that if you changed something in doA that
 change would appear doB because you called doA first. Using promises
 is very much like writing code with threads. You have no such guarantees.
+
+Use Cases
+---------
+
+   Without Promises
+   ----------------
+
+   var MyClass = new Class({
+
+     initialize: function(el, options)
+     {
+        this.setOptions(...);
+	if(this.options.cssFiles)
+        {
+	  var reqs = this.getCssFiles(cssFiles);
+          var group = new Group(reqs);
+          group.addEvent('onComplete', this.show.bind(this))
+          reqs.each(function(req) { req.send(); });
+        }
+        else
+        {
+          this.show();
+        }
+     },
+
+     getCssFiles: function(cssFiles)
+     {
+       return cssFiles.map(function(cssFile) {
+         return new Request({
+           url: cssFiles,
+           method: 'get'
+         });
+       });
+     },
+
+     show: function(cssFiles)
+     {
+        if(css) this.addCssFiles(cssFiles);
+        ...
+     }
+
+  });
+
+
+   With Promises
+   -------------
+
+   var MyClass = new Class({
+
+     initialize: function(el, options)
+     {
+        this.setOptions(...);
+	this.show([this.getCSS("A"), this.getCSS("B")]);
+     },
+
+     getCSS: function()
+     {
+       if(this.options.css)
+       {
+          return new Request({
+             url: this.option.css,
+             method: 'get'
+          });
+       }
+     }.decorate(promise),
+
+     show: function(css)
+     {
+        if(css) this.addCSS();
+        ...
+     }.decorate(promise)
+
+  });
+
+
+
+    
+
+     
