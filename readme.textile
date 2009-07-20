@@ -95,7 +95,7 @@ to push Requests onto the queue in the order we want them to
 execute. And we still need to create an accumulator via a
 closure. 
 
-Compare this to the example above where the JavaScript definition of
+Compare this to the example above where the order of JavaScript
 function argument evalution ensures the proper order and no
 accumulator via a closure is required.
 
@@ -183,13 +183,13 @@ resource *foo*, a Promise will fetch that resource and fire an event
 Now by itself this doesn't sound very useful. It's just a wrapper around
 Request that doesn't do anything. This is where decorators come in. I
 suggest reading the following article about decorators in
-Python- [url]
+Python- [http://www.artima.com/weblogs/viewpost.jsp?thread=240808]
 
-Basically a decorator simply wraps a functions with new
-functionality.  Decorators can be used for handy things like type
-checking arguments to a function, JSON.encoding all of a function's
-return values, etc. They about a powerful a construct you can have
-without full blown Lisp macros.
+Basically a decorator simply wraps a functions with new functionality.
+Decorators can be used for handy things like type checking arguments
+to a function, JSON.encoding all of a function's return values,
+etc. They are about as a powerful a construct as you can have without
+full blown Lisp macros ;)
 
 In addition to the Promises class the Promises library provides a
 decorator called *promise* that does a few interesting things:
@@ -198,7 +198,7 @@ decorator called *promise* that does a few interesting things:
   converted into a Promise. This does not mean a request will be
   made. Promises are "lazy". They will not be realized unless they
   cross the function interface of another promise decorated function.
-# A function arguments will checked to see if any unrealized Promises
+# A function arguments will be checked to see if any unrealized Promises
   were passed in. If so, the function blocks until those Promises have
   been realized. If a realized Promise returns an unrealized Promise
   as a value, the function will continue to block.
@@ -239,27 +239,28 @@ programming there is just no way to express the above succintly.
 The get function because it has been decorated with promise will
 convert the request into a Promise instance. It will not call the 
 request until this instance crosses the function interface of a
-function that has also be decorated by promise- fnB for example.
+function that has also been decorated by promise- fnB for example.
 
 <pre>
 fnB(get('a'), 'b')
 </pre>
 
-Send the result of <code>get('a')</code> to fnB will force the Promise
-instance to be realized. However since it fnB is blocking it returns
-a Promise for it's return value. Note that the above logic means that
-a lot of Promise instances are generated. For completeness fnB itself
-returns a Promise when it runs! The Promise decorator is smart enough
-to see that the function returned a value that is itself a promise, it
-will continue to block until it can get a real value.
+This sends the resultin Promise instance of <code>get('a')</code> to
+fnB which will force it to realized. However since fnB is blocking
+*it returns its own Promise for its final return value*. Note that the
+above logic means that a lot of Promise instances are generated. For
+completeness fnB itself returns a Promise when it runs!  The *promise*
+decorator is smart enough to see that the function finaly returned a
+value but that value is itself an unrealized promise, it will continue
+to block until it can get a real value.
 
 Also note the use of Promise.op.
 
 # Promise.op allows you to modify the value of a Promise.
-# If a Promise is unrealized Proimse.op returns the Promise.
-# If realized Promise.op returns the value after the op is applied.
+# If a Promise is unrealized Promise.op returns the Promise.
+# If realized, Promise.op returns the value after the op is applied.
 # Before the Promise fires it's realized event all ops that were
-   queued up will be applied first.
+  queued up will be applied first.
 
 This might seem overly complex, but consider the following real world
 example.
