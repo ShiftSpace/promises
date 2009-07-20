@@ -44,7 +44,18 @@ function $msg(methodName)
   };
 }
 
-
+/*
+  Class: Promise
+    You can create empty Promise instances, Promises from unsent Request instances
+    or from an array of values containing promises.
+    
+    new Promise();
+    new Promise(new Request({url:'bar.html'}));
+    new Promise(["foo", new Promise(new Request({url:'bar.html'})), "baz"]);
+    
+    Please note that you should not initialize Promise with a Request which has already 
+    been sent.
+*/
 var Promise = new Class({
 
   Implements: [Events, Options],
@@ -108,7 +119,13 @@ var Promise = new Class({
     return value;
   },
   
-  
+  /*
+    Method: op
+      You can modify the value of unrealized Promise with op. If the Promise
+      is unrealized, the return value will be the Promise itself. If already
+      realized, the return value will be value of the Promise after the operation
+      has been applied.
+  */
   op: function(fn)
   {
     if(!this.__realized)
@@ -186,7 +203,11 @@ Promise.getValue = function(v)
   return v;
 }
 
-
+/*
+  Function: Promise.toValues
+    Map an array of values to only non-Promise values or
+    unrealized Promise values.
+*/
 Promise.toValues = function(ary)
 {
   while(ary.some(Promise.isPromise))
@@ -196,7 +217,11 @@ Promise.toValues = function(ary)
   return ary;
 }
 
-
+/*
+  Function: Promise.promiseOrValue
+    If v is a Request object returns a promise, otherwise
+    just the value.
+*/
 Promise.promiseOrValue = function(v)
 {
   if(v && v.xhr)
@@ -206,7 +231,18 @@ Promise.promiseOrValue = function(v)
   return v;
 }
 
-
+/*
+  Function: Promise.watch
+    Watch an array of values containing unrealized promises.
+    This will not call the callback until there no unrealized
+    promises left. This means if the value of a Promise is
+    another Promise which is not realized, Promise.watch will simply
+    Promise.watch the values again.
+    
+  Parametes:
+    args - an array of values, can contain Promise instances realized or unrealized.
+    cb - a function callback.
+*/
 Promise.watch = function(args, cb)
 {
   var promises = args.filter(Promise.isPromise);
@@ -241,7 +277,13 @@ Promise.allRealized = function(vs)
   return vs.filter(Promise.isPromise).every($msg("isRealized"));
 }
 
-
+/*
+  Function: promise
+    The promise decorator. Takes a function and returns a new function that
+    can handle Promises as arguments. If this new function recieves an promises
+    it will continue to block until it can convert all of it's arguments to 
+    non-Promise values.
+*/
 function promise(fn) 
 {
   return function decorator() {
