@@ -130,33 +130,33 @@ need to change the get function to not call Request.send().
 
 Why is that? You do not want to miss that onComplete event under any
 circumstances- the event handler has to be in place before you make
-the request. So get can only return the Request object not send
-it. You now have send the request yourself after you've set up your
+the request. So get can only return the Request object, it cannot send
+it. You now have to send the Requests yourself after you've set up your
 Group on all the Requests that you care about.
 
 But say that while you are prototyping you realize the computation of the
 value2, "af", is needed elsewhere. Damn. You can't reuse the code you've
-written here because the computation of value2 cannot placed in it's
+written here because the computation of value2 cannot placed in its
 own function without duplicating code- the waiting logic for a and b
 that is shared by both the computation of value1 and value2. Wow, as your
-requirements become more complex your code will become harder and harder
-to maintain.
+requirements become more and mor complex your code will become harder
+and harder to maintain.
 
 This clearly illustrates that traditional style AJAX requests cannot
 be composed. 
 
 Which leaves one to wonder? Can anything be done about this or are we
 doomed to write complex hard to maintain spaghetti callback
-code. Before we consider the solution take note of another downside of
-callback oriented AJAX requests. 
+code. Before we consider the solution take note of yet another downside 
+to callback oriented AJAX requests. 
 
 Suppose a developer using your library wishes to extend your code with
 the intention of making their own code extendable. Because your
 function interface provides a callback to deliver the result of the
-computation , his/her code *will also* have to provide a callback
+computation, his/her code *will also* have to provide a callback
 argument in his/her function interface in order to deliver a result to
-user's of this library extension. There's no way to solve this,
-callback's on function interfaces are viral!
+users of their library extension. Damn, callbacks on function interfaces 
+are viral!
 
 Hmm...
 
@@ -167,7 +167,10 @@ way that we can compose them?
 While there have been several attempts to do such a thing many of the
 solutions require the programmer to adopt a library that is painfully
 "non-webby" or one that transforms your JavaScript into a fairly
-undebuggable form.
+undebuggable form- Flapjax and Narrative Javascript are two examples.
+This isn't to dog on them, they are both very, very cool projects
+with a lot to learn from (I'd never heard of continuations until
+Narrative JavaScript).
 
 Here's where Promises comes in.  Promises provide a simple
 JavaScript-ish solution to this problem that is easy to port to other
@@ -178,33 +181,37 @@ significant advantages for code that is request heavy.
 So what are Promises? Promises are objects that represent unrealized
 values. They encapsulate the request. When you request the value of
 resource *foo*, a Promise will fetch that resource and fire an event
-"realized" with its realized value when the request is complete.
+*realized* with its realized value when the request is complete.
 
 Now by itself this doesn't sound very useful. It's just a wrapper around
 Request that doesn't do anything. This is where decorators come in. I
 suggest reading the following article about decorators in
-Python- [http://www.artima.com/weblogs/viewpost.jsp?thread=240808]
+Python- [http://www.artima.com/weblogs/viewpost.jsp?thread=240808].
+If you're not familiar with them, the following may not make much
+sense. They aren't complicated so I suggest going over that first
+before continuing.
 
 Basically a decorator simply wraps a functions with new functionality.
 Decorators can be used for handy things like type checking arguments
-to a function, JSON.encoding all of a function's return values,
-etc. They are about as a powerful a construct as you can have without
+to a function or JSON.encoding all of a function's return values.
+They are about as a powerful a construct as you can have without
 full blown Lisp macros ;)
 
-In addition to the Promises class the Promises library provides a
+In addition to the Promise class the Promises library provides a
 decorator called *promise* that does a few interesting things:
 
 # If a function returns a Request instance it will automatically be
   converted into a Promise. This does not mean a request will be
   made. Promises are "lazy". They will not be realized unless they
   cross the function interface of another promise decorated function.
-# A function arguments will be checked to see if any unrealized Promises
+# A function's arguments will be checked to see if any unrealized Promises
   were passed in. If so, the function blocks until those Promises have
   been realized. If a realized Promise returns an unrealized Promise
   as a value, the function will continue to block.
 # This means all arguments inside of promise decorated function will
   be guaranteed to be realized. The upside is that you call these
   functions with non-Promise arguments and they will work just fine!
+# Reread 3. This means you can sanely unit test AJAX code!
 
 Enough talk, here's an example:
 
@@ -217,7 +224,7 @@ var get = function(rsrc)
   });
 }.decorate(promise)
 
-var fnB = function(a, b)
+var fnA = function(a, b)
 {
   var p = get(b);
   return p.op(function(value) { return a + value; });
@@ -228,7 +235,7 @@ var show = function show(arg)
   console.log(arg);
 }.decorate(promise)
 
-show(fnB(fnB(fnB(fnB(fnB(get('a'), 'b'), 'c'), 'd'), 'e'), 'f'))
+show(fnA(fnA(fnA(fnA(fnA(get('a'), 'b'), 'c'), 'd'), 'e'), 'f'))
 </pre>
 
 Notice we have no callbacks. Yes this code makese 6 simultaneous
@@ -236,25 +243,31 @@ Requests. We don't have to queue them.  When we run this code will
 print "abcdef" to the JavaScript console. In traditional AJAX
 programming there is just no way to express the above succintly.
 
-The get function because it has been decorated with promise will
+The get function, because it has been decorated with promise, will
 convert the request into a Promise instance. It will not call the 
 request until this instance crosses the function interface of a
-function that has also been decorated by promise- fnB for example.
+function that has also been decorated by promise- fnA for example.
 
 <pre>
-fnB(get('a'), 'b')
+fnA(get('a'), 'b')
 </pre>
 
-This sends the resultin Promise instance of <code>get('a')</code> to
-fnB which will force it to realized. However since fnB is blocking
-*it returns its own Promise for its final return value*. Note that the
-above logic means that a lot of Promise instances are generated. For
-completeness fnB itself returns a Promise when it runs!  The *promise*
-decorator is smart enough to see that the function finaly returned a
-value but that value is itself an unrealized promise, it will continue
-to block until it can get a real value.
+This sends the resulting Promise instance of <code>get('a')</code> to
+fnB which will force it to be realized. However since fnB is now blocking
+*it returns a Promise for its final return value*! Note that the
+above logic means that a lot of Promise instances are generated. Note
+that even when the result of fnA is realized, that realized value is
+yet another Promise. Yikes! 
 
-Also note the use of Promise.op.
+It's OK. The *promise* decorator is smart enough to see that when the
+blocking function finally returned a value this value is itself an
+unrealized Promise, it will continue to block until it can get a real
+value. Whew.
+
+Also note the use of Promise.op. Sometimes you'll need to modify the
+value of a Promise. You of course can't do this directly, there is no
+value yet! However Promise.op lets you queue up operations to be
+applied to the value. The quick facts:
 
 # Promise.op allows you to modify the value of a Promise.
 # If a Promise is unrealized Promise.op returns the Promise.
@@ -390,8 +403,10 @@ and Promises can.
 
 h1. Other Notes & Caveats
 
+h2. Debugging & Unit Tests
+
 There are some debugging dangers to take note of when using
-promises. If you've done any programming in a language that supports
+Promises. If you've done any programming in a language that supports
 lazy data structures you know the kind of trouble you can get
 to.
 
@@ -406,7 +421,10 @@ pass unit tests with regular arguments, they are guaranteed to work
 with values coming from asynchronous requests!
 
 This is another BIG benefit of Promises. You can unit test your code
-as regular code not as asynchronous code.
+as regular code not as asynchronous code. Regular AJAX style coding
+is painful to unit test.
+
+h2. Concurrency Issues
 
 Be careful of modifying a promise via Promise.op after you've passed
 it onto another function. JavaScript is mutable language- if you give
@@ -418,12 +436,13 @@ Rules of thumb about modifying Promises via Promise.op:
 
 # At the creation site of a Promise instance you can modify the
   instance at will.
-# As soon as Promise is sent to another function, you call op at your
-  own peril.
+# As soon as Promise is sent to another function, you call Promise.op
+  at your own peril.
 
 Another thing to watch out for is that code that uses Promises is not
-deterministic. You have to be aware of that fact when using functions
-that return promises. Consider the following flawed example:
+deterministic. You have to be aware of that fact when writing functions
+that call other function with Promises instead of fully realized
+values. Consider the following flawed example:
 
 <pre>
 var MyClass = new Class({
@@ -448,8 +467,8 @@ var MyClass = new Class({
 
   myMethod: function() 
   {
-    this.doA(this.loadResource(...));
-    this.doB(this.loadResource(...));
+    this.doA(this.loadResource(...));    // calling this.doA with a Promise
+    this.doB(this.loadResource(...));    // calling this.doB with a Promise
   }
 
 })
