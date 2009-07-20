@@ -351,6 +351,7 @@ onComplete handler.
 # We don't need to create a closure to map the requests to their
 responseText values. 
 # We don't need to call show in two different locations.
+# The call to show only blocks if we have files to load.
 
 Now imagine that you decide that show needs to take another
 asynchronous parameter- like an html fragment. This means creating

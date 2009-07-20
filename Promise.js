@@ -70,7 +70,7 @@ var Promise = new Class({
     }
     else if(value)
     {
-      throw new Error("You can only create empty promises or promises from Request objects.");
+      throw new Error("You can only create empty Promises, P  romises from Request objects or from an array of values containing Promise instances.");
     }
   },
 
