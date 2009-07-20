@@ -213,7 +213,79 @@ no way to express the above succintly.
 Also note the use of Promise.op.
 
 1. Promise.op allows you to modify the value of a Promise.
+
 2. If a Promise is unrealized Proimse.op returns the Promise.
+
 3. If realized Promise.op returns the value after the op is applied.
+
 4. Before the Promise fires it's realized event all ops that were
    queued up will be applied first.
+
+
+Other Notes & Caveats
+---------------------
+
+There are some debugging dangers to take note of when using
+promises. If you've done any programming in a language that supports
+lazy datastructures you know the kind of trouble you can get
+to. 
+
+You might find that errors occur in places much further down
+the line then you'd expect. I'll try to improve the error reporting
+capabilities of Promises, but in general I imagine Promises will be
+most effective in a codebase that unit tests promise decorated
+functions. 
+
+Again, the benefit or Promises is that if your functions
+pass unit tests with regular arguments, they are guaranteed to work
+with values coming from asynchronous requests!
+
+This is another BIG benefit of Promises. You can unit test your code
+as regular code not as asynchronous code.
+
+Be careful of modifying a promise via op after you've passed it on to
+another function. JavaScript is mutable language- if you give ops to a
+Promise after you've handed it, you find that you get very weird
+results from your functions. If you treats Promises as immutable
+quantities you'll avoid monstrous bugs in your code as well as have a
+robust full concurrent client side JavaScript application.
+
+Rules of thumb:
+
+1. At the creation site of Promise you can modify the Promise at will.
+2. As soon as Promise is sent to another function, you call op at your peril.
+
+Another thing to watch out for is that code that uses promises is not
+deterministic. You have to be aware of that fact when using functions
+that return promises:
+
+  var MyClass = new Class({
+
+    loadResource: function(rsrc)
+    {
+      return new Request({
+         url: ...,
+         method: 'get'
+      });
+    }.decorate(promise),
+
+    doA: funtion()
+    {
+    }.decorate(promise),
+
+    doB: function()
+    {
+    }.decorate(proimse),
+
+    myMethod: function() 
+    {
+      this.doA(this.loadResource(...));
+      this.doB(this.loadResource(...));
+    }
+
+  })
+
+doA should not depend on the behavior of doB at all. When coding without
+promises you would know that if you changed something in doA that
+change would appear doB because you called doA first. Using promises
+is very much like writing code with threads. You have no such guarantees.
