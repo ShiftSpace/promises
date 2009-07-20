@@ -115,9 +115,9 @@ challenges. The simple (and least desirable solution) is to wait for
 all the resources and basically put the final result together in last
 resource request. Why is this bad?
 
-** This code cannot be decomposed. You have to use it as one big
+# This code cannot be decomposed. You have to use it as one big
    frozen block of functionality.
-** The computation of value2 must wait for value1!
+# The computation of value2 must wait for value1!
 
 You could wait for value a, and then put the computation of value1 and
 value2 inside of the callback for the request for a. But suppose you
@@ -176,9 +176,17 @@ return values, etc.
 The Promises library provides a decorate called promise that does something very
 intersting:
 
-# If a function returns a Request instance it will automatically be converted into a Promise. This does not mean a request will be made. Promises are "lazy". They will not be realized unless they cross the function interface of a promise decorated function.
-# A function arguments will checked to see if any unrealized Promises were passed. If so, the function blocks until those Promises have been realized. If a realized Promises returns an unrealized Promise as a value, the function will continue to block.
-# This means all arguments inside of promise decorated function will be guaranteed to be realized. The upside is that you call these functions with non-Promise arguments and they will work just fine.
+# If a function returns a Request instance it will automatically be
+  converted into a Promise. This does not mean a request will be
+  made. Promises are "lazy". They will not be realized unless they
+  cross the function interface of a promise decorated function.
+# A function arguments will checked to see if any unrealized Promises
+  were passed. If so, the function blocks until those Promises have
+  been realized. If a realized Promises returns an unrealized Promise
+  as a value, the function will continue to block.
+# This means all arguments inside of promise decorated function will
+  be guaranteed to be realized. The upside is that you call these
+  functions with non-Promise arguments and they will work just fine.
 
 Enough talk, here's an example:
 
