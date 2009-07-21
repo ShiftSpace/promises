@@ -280,7 +280,7 @@ Promise.allRealized = function(vs)
 /*
   Function: promise
     The promise decorator. Takes a function and returns a new function that
-    can handle Promises as arguments. If this new function recieves an promises
+    can handle Promises as arguments. If this new function recieves any Promises
     it will continue to block until it can convert all of it's arguments to 
     non-Promise values.
 */
