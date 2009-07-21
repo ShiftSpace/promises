@@ -318,6 +318,7 @@ function promise(fn)
           var err = new Error("Failed to realize promise from " + errPromise.__req.options.url);
           err.promise = errPromise;
           err.source = fn.toSource();
+          err.sourceArgs = args;
           throw err;
         }.bind(this));
 
