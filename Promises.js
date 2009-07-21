@@ -18,12 +18,11 @@ Function.implement({
   {
     var decorators = $A(arguments);
     var resultFn = this;
-    var decorator = decorators.pop();
+    var decorator;
     
-    while(decorator)
+    while(decorator = decorators.pop())
     {
       resultFn = decorator(resultFn);
-      decorator = decorators.pop();
     }
     
     return resultFn;
