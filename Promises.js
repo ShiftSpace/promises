@@ -5,8 +5,7 @@
   http://en.wikipedia.org/wiki/Futures_and_promises
 */
 
-// hopefully wrap in 2.0 uses the method mutator
-// we put a reference to the wrapper on the fn
+// we need a backreference to wrapper
 Class.extend({
   wrap: function(self, key, method)
   {

@@ -28,6 +28,8 @@ var MySubClass = new Class({
 
   add: function(a, b)
   {
+    // remember by this point a and b are realized
+    // we're not sending promises to parent!
     return this.parent(a, b) + "!";
   }.decorate(promise)
 });
