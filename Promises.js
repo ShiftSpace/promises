@@ -95,8 +95,11 @@ var Promise = new Class({
   initReq: function(req)
   {
     this.__req = req;
-    req.addEvent('onComplete', function(responseText) {
+    req.addEvent('onSuccess', function(responseText) {
       this.setValue(this.applyOps(JSON.decode(responseText).data));
+    }.bind(this));
+    req.addEvent('onFailure', function(responseText) {
+      this.fireEvent('error', this);
     }.bind(this));
     if(!this.options.lazy) req.send();
   },
@@ -241,8 +244,9 @@ Promise.promiseOrValue = function(v)
   Parametes:
     args - an array of values, can contain Promise instances realized or unrealized.
     cb - a function callback.
+    errCb - a error callback.
 */
-Promise.watch = function(args, cb)
+Promise.watch = function(args, cb, errCb)
 {
   var promises = args.filter(Promise.isPromise);
   var unrealized = promises.filter($msg("isNotRealized"));
@@ -262,6 +266,13 @@ Promise.watch = function(args, cb)
         cb(Promise.toValues(args));
       }
     });
+    
+    if(errCb)
+    {
+      unrealized.each(function(aPromise) {
+        aPromise.addEvent('error', errCb.bind(null, [aPromise]));
+      });
+    }
     
     unrealized.each($msg('realize'));
   }
@@ -296,9 +307,19 @@ function promise(fn)
     {
       var p = new Promise();
       
-      Promise.watch(args, function(realized) {
-        p.setValue(fn.apply(this, realized));
-      }.bind(this));
+      Promise.watch(
+        args, 
+        function(realized) 
+        {
+          p.setValue(fn.apply(this, realized));
+        }.bind(this), 
+        function(errPromise)
+        {
+          var err = new Error("Failed to realize promise from " + errPromise.__req.options.url);
+          err.promise = errPromise;
+          err.source = fn.toSource();
+          throw err;
+        }.bind(this));
 
       return p;
     }
