@@ -56,6 +56,14 @@ Function.implement({
 });
 
 
+Function.implement({
+  asPromise: function() 
+  {
+    return this.decorate(promise);
+  }
+});
+
+
 function $msg(methodName) 
 {
   var rest = $A(arguments).drop(1);

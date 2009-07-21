@@ -60,11 +60,20 @@ function example3()
   show(result, 'ex3'); // -> "a, b, c, d, e, f"
 }
 
-// if you attempt to creata promise from a resource that doesn't exist
-// you'll get an exception
+// short cut (For Avital)
 function example4()
 {
-  var result = add(add(add(add(add(get('a'), get('b')), get('c')), get('d')), get('e')), get('z')); // -> abcdef
+  var subtract = function(a, b) { return a - b; }.asPromise();
+  show(subtract(get("10"), get("7")), "ex4");
+}
+
+// if you attempt to creata promise from a resource that doesn't exist
+// you'll get an exception, in order to help with debugging the error
+// will contain the source of the function that causes the error as well
+// as the arguments that were passed to that function.
+function example5()
+{
+  var result = add(add(add(add(add(get('a'), get('b')), get('c')), get('d')), get('e')), get('z'));
 }
 
 function runExamples()
@@ -73,5 +82,6 @@ function runExamples()
   example2();
   example3();
   example4();
+  example5();
 }
 
