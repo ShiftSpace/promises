@@ -28,14 +28,14 @@ var MySubClass = new Class({
 
   add: function(a, b)
   {
-    return this.parent().op(function(value) { value += "!"; });
+    return this.parent(a, b) + "!";
   }.decorate(promise)
 });
 
 
 var show = function(value, target)
 {
-  $(target).setPropert('value', value);
+  $(target).setProperty('value', value);
 }.decorate(promise)
 
 

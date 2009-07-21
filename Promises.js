@@ -5,6 +5,28 @@
   http://en.wikipedia.org/wiki/Futures_and_promises
 */
 
+// hopefully wrap in 2.0 uses the method mutator
+// we put a reference to the wrapper on the fn
+Class.extend({
+  wrap: function(self, key, method)
+  {
+    if (method._origin) method = method._origin;
+
+    var wrapper = function(){
+      if (method._protected && this._current == null) throw new Error('The method "' + key + '" cannot be called.');
+      var caller = this.caller, current = this._current;
+      this.caller = current; this._current = arguments.callee;
+      var result = method.apply(this, arguments);
+      this._current = current; this.caller = caller;
+      return result;
+    }.extend({_owner: self, _origin: method, _name: key});
+
+    method._wrapper = wrapper;
+    return wrapper;
+  }
+});
+
+
 Array.implement({
   drop: function(n) 
   {
@@ -311,7 +333,10 @@ function promise(fn)
         args, 
         function(realized) 
         {
+          var temp = this._current;
+          this._current = decorator._wrapper;
           p.setValue(fn.apply(this, realized));
+          this._current = temp;
         }.bind(this), 
         function(errPromise)
         {
