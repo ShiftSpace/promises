@@ -253,7 +253,7 @@ fnA(get('a'), 'b')
 </pre>
 
 This sends the resulting Promise instance of <code>get('a')</code> to
-fnB which will force it to be realized. However since fnB is now blocking
+fnA which will force it to be realized. However since fnA is now blocking
 *it returns a Promise for its final return value*! Note that the
 above logic means that a lot of Promise instances are generated. Note
 that even when the result of fnA is realized, that realized value is
