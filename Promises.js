@@ -251,7 +251,6 @@ Promise.watch = function(args, cb)
   if(unrealized.length > 0)
   {
     var watching = new Group(unrealized);
-    unrealized.each($msg('realize'));
   
     watching.addEvent('realized', function() {
       args = args.map(Promise.getValue);
@@ -264,6 +263,8 @@ Promise.watch = function(args, cb)
         cb(Promise.toValues(args));
       }
     });
+    
+    unrealized.each($msg('realize'));
   }
   else
   {
