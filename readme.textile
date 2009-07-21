@@ -398,7 +398,7 @@ if(this.options.cssFiles)
 this.show(p, this.getFile("foo.html")); // the only change
 </pre>
 
-Hopefully yout beginning to see that regular requests cannot be composed
+Hopefully you're beginning to see that regular requests cannot be composed
 and Promises can.
 
 h1. Other Notes & Caveats
