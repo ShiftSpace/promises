@@ -124,26 +124,13 @@ var Promise = new Class({
       this.fireEvent('error', this);
     }.bind(this));
 
-    if(!this.options.lazy) this.send();
-  },
-  
-  
-  send: function()
-  {
-    if(this.__req.__json)
-    {
-      this.__req.send(JSON.encode(this.__req.__json));
-    }
-    else
-    {
-      this.__req.send();
-    }
+    if(!this.options.lazy) req.send();
   },
   
   
   realize: function()
   {
-    if(this.__req) this.send();
+    if(this.__req) this.__req.send();
   },
   
   
