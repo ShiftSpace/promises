@@ -6,7 +6,6 @@ window.addEvent('domready', runExamples);
 var get = function(rsrc) 
 {
   return new Request({
-    method: 'get',
     url: 'data/'+rsrc+'.json'
   });
 }.decorate(promise)

@@ -1,20 +1,18 @@
-window.addEvent('domready', exmaple);
+window.addEvent('domready', example);
 
 
 var MyClass = new Class({
   a: function() 
   {
     return new Request({
-      method: 'get',
-      url: 'a.json'
+      url: 'data/a.json'
     });    
   }.decorate(promise),
   
   b: function()
   {
     return new Request({
-      method: 'get',
-      url: 'b.json'
+      url: 'data/b.json'
     });    
   }.decorate(promise),
   
@@ -26,6 +24,8 @@ var MyClass = new Class({
 
 
 var MySubClass = new Class({
+  Extends: MyClass,
+
   add: function(a, b)
   {
     return this.parent().op(function(value) { value += "!"; });
@@ -35,12 +35,12 @@ var MySubClass = new Class({
 
 var show = function(value, target)
 {
-  target.setPropert('value', value);
+  $(target).setPropert('value', value);
 }.decorate(promise)
 
 
 function example()
 {
   var instance = new MySubClass()
-  show(instance.add(instance.a(), instance.b()));
+  show(instance.add(instance.a(), instance.b()), "ex1");
 }
