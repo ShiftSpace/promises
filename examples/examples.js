@@ -61,10 +61,18 @@ function example3()
   show(result, 'ex3'); // -> "a, b, c, d, e, f"
 }
 
+// if you attempt to creata promise from a resource that doesn't exist
+// you'll get an exception
+function example4()
+{
+  var result = add(add(add(add(add(get('a'), get('b')), get('c')), get('d')), get('e')), get('z')); // -> abcdef
+}
+
 function runExamples()
 {
   example1();
   example2();
   example3();
+  example4();
 }
 
