@@ -114,10 +114,16 @@ var add2 = function(a, b)
   return a + b;
 }.decorate(promise, pre(evenOdd, true))
 
+var add3 = function(a, b)
+{
+  return a + b;
+}.decorate(promise, pre(evenOdd, console.log))
+
 function example7()
 {
-  show(add2(get("10"), add2(get("10"), get("7"))));
-  show(add2(get("7"), add2(get("10"), get("7"))));
+  show(add2(get("10"), add2(get("10"), get("7")))); // works
+  show(add2(get("7"), add2(get("10"), get("7")))); // will fail with exception
+  show(add3(get("7"), add3(get("10"), get("7")))); // will fail no exception
 }
 
 // Run Examples

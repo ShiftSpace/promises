@@ -403,9 +403,9 @@ function memoize(fn)
 /*
   Decorator: pre
 */
-function pre(conditions, throwError)
+function pre(conditions, error)
 {
-  throwError = throwError || false;
+  error = error || false;
   return function preDecorator(fn) {
     return function() {
       var args = $A(arguments);
@@ -421,7 +421,7 @@ function pre(conditions, throwError)
       }
       else
       {
-        if(throwError)
+        if($type(error) == 'boolean' && error)
         {
           var err = new Error("Arguments did not match pre conditions.");
           err.args = args;
@@ -429,7 +429,10 @@ function pre(conditions, throwError)
           err.source = fn.toSource();
           throw err;
         }
-        return;
+        else if($type(error) == 'function')
+        {
+          error(passed);
+        }
       }
     }
   }
