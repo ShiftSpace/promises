@@ -376,8 +376,8 @@ function promise(fn)
     with many different kinds of arguments you will consume memory very
     quickly. This decorator works best with arguments not containg any
     object values. This is becuase the args array is JSON encoded into a
-    string for comparison. So arguments compoesd of strings, integers, and 
-    arrays work best. Normally this would be a problem but for acessing remote 
+    string for comparison. So arguments composed of strings, integers, and 
+    arrays work best. Normally this would be a problem but for acecssing remote 
     resources this limitation is fine.
 */
 function memoize(fn)
