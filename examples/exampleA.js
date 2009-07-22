@@ -23,7 +23,14 @@ var add = function(a, b)
 */
 var show = function show(value, target)
 {
-  $(target).setProperty('value', value)
+  if(target)
+  {
+    $(target).setProperty('value', value)
+  }
+  else
+  {
+    console.log(value);
+  }
 }.decorate(promise)
 
 
@@ -75,6 +82,22 @@ function example5()
 {
   var result = add(add(add(add(add(get('a'), get('b')), get('c')), get('d')), get('e')), get('z'));
 }
+
+// A relatively useful pattern for loading lazy resources
+var lazyResource;
+var example6 = function(resource)
+{
+  if(lazyResource)
+  {
+    return lazyResource;
+  }
+  else
+  {
+    var p = get("a");
+    lazyResource = p;
+    return p;
+  }
+}.asPromise();
 
 function runExamples()
 {

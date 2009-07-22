@@ -261,6 +261,7 @@ Promise.promiseOrValue = function(v)
   {
     return new Promise(v);
   }
+  if(Promise.isPromise(v) && v.isRealized()) return v.value();
   return v;
 }
 
