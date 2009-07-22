@@ -83,7 +83,7 @@ function example5()
   var result = add(add(add(add(add(get('a'), get('b')), get('c')), get('d')), get('e')), get('z'));
 }
 
-// A relatively useful pattern for loading lazy resources
+// A relatively useful pattern for loading lazy resources - a singleton resource as it were
 var lazyResource;
 var example6 = function(resource)
 {
@@ -106,5 +106,10 @@ function runExamples()
   example3();
   example4();
   example5();
+  
+  // the following will only generate a single request yet print three times to the console
+  show(example6());
+  show(example6());
+  show(example6());
 }
 
