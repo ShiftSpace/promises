@@ -84,7 +84,7 @@ function example5()
 }
 
 // A relatively useful pattern for loading lazy resources - a singleton resource as it were
-var example6 = function(resource)
+var example6 = function()
 {
   return get("a");
 }.decorate(promise, memoize);
