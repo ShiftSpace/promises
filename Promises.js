@@ -322,7 +322,7 @@ Promise.allRealized = function(vs)
 }
 
 /*
-  Function: promise
+  Decorator: promise
     The promise decorator. Takes a function and returns a new function that
     can handle Promises as arguments. If this new function recieves any Promises
     it will continue to block until it can convert all of it's arguments to 
@@ -370,7 +370,7 @@ function promise(fn)
 }
 
 /*
-  Function: memoize
+  Decorator: memoize
     Because lazy-loading of resources is so common, I've included
     memoize. This will memoize the return values of a function depending
     on the arguments passed in. Note that if you call a function frequently
@@ -398,4 +398,39 @@ function memoize(fn)
       return table[enc];
     }
   };
+}
+
+/*
+  Decorator: pre
+*/
+function pre(conditions, throwError)
+{
+  throwError = throwError || false;
+  return function preDecorator(fn) {
+    return function() {
+      var args = $A(arguments);
+      var i = 0;
+      var passed = conditions.map(function(afn) {
+        var result = afn(args[i]);
+        i++;
+        return result;
+      });
+      if(passed.indexOf(false) == -1)
+      {
+        return fn.apply(this, args);
+      }
+      else
+      {
+        if(throwError)
+        {
+          var err = new Error("Arguments did not match pre conditions.");
+          err.args = args;
+          err.conditions = conditions;
+          err.source = fn.toSource();
+          throw err;
+        }
+        return;
+      }
+    }
+  }
 }
