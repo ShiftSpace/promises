@@ -89,6 +89,39 @@ var example6 = function()
   return get("a");
 }.decorate(promise, memoize);
 
+// Preconditions
+// =============
+function even(n)
+{
+  return (n % 2) == 0;
+}
+
+function odd(n)
+{
+  return !even(n);
+}
+
+// conditions are just an array of functions that will
+// be used with the respective argument.
+var evenOdd = [even, odd];
+var oddEven = [odd, even];
+
+// pre(evenOdd, true), we want to check that the first argument
+// is even, the second odd, and we want exceptions if this is not
+// fulfilled
+var add2 = function(a, b)
+{
+  return a + b;
+}.decorate(promise, pre(evenOdd, true))
+
+function example7()
+{
+  show(add2(get("10"), add2(get("10"), get("7"))));
+  show(add2(get("7"), add2(get("10"), get("7"))));
+}
+
+// Run Examples
+// ============
 function runExamples()
 {
   example1();
@@ -101,5 +134,7 @@ function runExamples()
   show(example6());
   show(example6());
   show(example6());
+  
+  example7();
 }
 
