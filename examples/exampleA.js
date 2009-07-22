@@ -84,20 +84,10 @@ function example5()
 }
 
 // A relatively useful pattern for loading lazy resources - a singleton resource as it were
-var lazyResource;
 var example6 = function(resource)
 {
-  if(lazyResource)
-  {
-    return lazyResource;
-  }
-  else
-  {
-    var p = get("a");
-    lazyResource = p;
-    return p;
-  }
-}.asPromise();
+  return get("a");
+}.decorate(promise, memoize);
 
 function runExamples()
 {
