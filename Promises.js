@@ -253,7 +253,8 @@ Promise.toValues = function(ary)
 /*
   Function: Promise.promiseOrValue
     If v is a Request object returns a promise, otherwise
-    just the value.
+    if v is Promise which has been realized returns the promises
+    value. If it is not a promise, the value is simply returned.
 */
 Promise.promiseOrValue = function(v)
 {
@@ -291,7 +292,7 @@ Promise.watch = function(args, cb, errCb)
       args = args.map(Promise.getValue);
       if(!Promise.allRealized(args))
       {
-        Promise.watch(args, cb);
+        Promise.watch(args, cb, errCb);
       }
       else
       {
