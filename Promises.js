@@ -344,6 +344,7 @@ function promise(fn)
         args, 
         function(realized) 
         {
+          // hack so that this.parent(...) is meaningful even after an async call
           var temp = this._current;
           this._current = decorator._wrapper;
           p.setValue(fn.apply(this, realized));
@@ -374,7 +375,7 @@ function promise(fn)
     memoize. This will memoize the return values of a function depending
     on the arguments passed in. Note that if you call a function frequently
     with many different kinds of arguments you will consume memory very
-    quickly. This decorator works best with arguments not containg any
+    quickly. This decorator works best with arguments not containing any
     object values. This is becuase the args array is JSON encoded into a
     string for comparison. So arguments composed of strings, integers, and 
     arrays work best. Normally this would be a problem but for acecssing remote 
