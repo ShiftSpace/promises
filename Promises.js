@@ -367,3 +367,36 @@ function promise(fn)
     }
   }
 }
+
+/*
+  Function: memoize
+    Because lazy-loading of resources is so common, I've included
+    memoize. This will memoize the return values of a function depending
+    on the arguments passed in. Note that if you call a function frequently
+    with many different kinds of arguments you will consume memory very
+    quickly. This decorator works best with arguments not containg any
+    non-object values. This is becuase  value are JSON encoded into strings 
+    for comparison. String, integers, and arrays work best. For remote 
+    resources this limitation works well.
+*/
+function memoize(fn)
+{
+  var keys = [];
+  var values = [];
+  return function memoized() {
+    var args = $A(arguments);
+    var enc = JSON.encode(args);
+    var idx = keys.indexOf(enc)
+    if(idx == -1)
+    {
+      keys.push(enc);
+      var result = fn.apply(this, args);
+      values.push(result);
+      return result;
+    }
+    else
+    {
+      return values[idx];
+    }
+  };
+}
