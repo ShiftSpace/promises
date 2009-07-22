@@ -382,22 +382,19 @@ function promise(fn)
 */
 function memoize(fn)
 {
-  var keys = [];
-  var values = [];
+  var table = {};
   return function memoized() {
     var args = $A(arguments);
     var enc = JSON.encode(args);
-    var idx = keys.indexOf(enc)
-    if(idx == -1)
+    if(!table[enc])
     {
-      keys.push(enc);
       var result = fn.apply(this, args);
-      values.push(result);
+      table[enc] = result;
       return result;
     }
     else
     {
-      return values[idx];
+      return table[enc];
     }
   };
 }
