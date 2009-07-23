@@ -52,6 +52,28 @@ Function.implement({
   rewind: function(bind, args)
   {
     return this._wrapper.bind(bind, args);
+  },
+  
+  receive: function(binding)
+  {
+    this.binding = binding;
+    return this;
+  },
+  
+  thread: function()
+  {
+    var fns = $A(arguments)
+    var self = this;
+    return function() {
+      var args = $A(arguments);
+      var result = self.apply(this, args);
+      var fn;
+      while(fn = fns.shift())
+      {
+        result = fn.apply(null, [result]);
+      }
+      return result;
+    }
   }
 });
 
@@ -182,9 +204,9 @@ var Promise = new Class({
   
   setValue: function(value)
   {
-    if(!value) return;
+    //if(value === null) return null;
     
-    if(value.xhr)
+    if(value && value.xhr)
     {
       this.initReq(value);
     }
@@ -437,3 +459,38 @@ function pre(conditions, error)
     }
   }
 }
+
+
+var $if = function(test, trueExpr, falseExpr) {
+  if(test)
+  {
+    if($type(trueExpr) == "function") return trueExpr();
+    return trueExpr;
+  }
+  else
+  {
+    if($type(falseExpr) == "function") return falseExpr();
+    return falseExpr;
+  }
+}.asPromise();
+
+
+var $iflet = function(binding, test, trueExpr, falseExpr)
+{
+  var arg;
+  if(test)
+  {
+    arg = ((trueExpr.binding == binding) && v) || null;
+    if($type(trueExpr) == "function") return trueExpr(arg);
+    return trueExpr;
+  }
+  else
+  {
+    arg = ((falseExpr.binding == binding) && v) || null;
+    if($type(falseExpr) == "function") 
+    {
+      return falseExpr(arg);
+    }
+    return falseExpr;
+  }
+}.asPromise();

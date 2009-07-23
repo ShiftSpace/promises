@@ -29,7 +29,7 @@ var show = function show(value, target)
   }
   else
   {
-    console.log(value);
+    console.log("show: " + value);
   }
 }.decorate(promise)
 
@@ -123,7 +123,26 @@ function example7()
 {
   show(add2(get("10"), add2(get("10"), get("7")))); // works
   show(add2(get("7"), add2(get("10"), get("7")))); // will fail with exception
-  show(add3(get("7"), add3(get("10"), get("7")))); // will fail no exception
+}
+
+// $if
+var foo;
+function example8()
+{
+  foo = $if(get("true"),
+            add.bind(null, [get("10"), get("7")]),
+            null);
+  show(foo);
+}
+
+// $iflet
+var testhash = {};
+function example9()
+{
+  testhash["foo"] = $iflet("sum", add3(get("7"), add3(get("10"), get("7"))),
+                           show.receive("sum"),
+                           function() { delete testhash["foo"]; return null; });
+  show(testhash["foo"]);
 }
 
 // Run Examples
@@ -142,5 +161,7 @@ function runExamples()
   show(example6());
   
   example7();
+  example8();
+  example9();
 }
 
