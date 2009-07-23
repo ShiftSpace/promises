@@ -38,7 +38,7 @@ var show = function show(value, target)
 
 function example1()
 {
-  show(add(add(add(add(add(get('a'), get('b')), get('c')), get('d')), get('e')), get('f')), 'ex1'); // -> abcdef
+  show(add(add(add(add(add(get('a'), get('b')), get('c')), get('d')), get('z')), get('f')), 'ex1'); // -> abcdef
 }
 
 // As long as you don't mutate promises directly

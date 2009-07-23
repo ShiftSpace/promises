@@ -398,11 +398,10 @@ function promise(fn)
       {
         var temp = this._current;
         unrealized.each($msg('realize'));
-        var values = unrealized.map(Promise.getValue);
+        var values = args.map(Promise.getValue);
         this._current = decorator._wrapper;
         result = fn.apply(this, values);
         this._current = temp;
-        console.log(result);
         return result;
       }
     }
