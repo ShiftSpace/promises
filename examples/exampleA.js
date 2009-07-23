@@ -1,6 +1,6 @@
 window.addEvent('domready', runExamples);
 
-Promise.debug = true;
+//Promise.debug = true;
 
 /*
   The promise decorator will automatically wrap the Request in a Promise instance.
@@ -38,7 +38,7 @@ var show = function show(value, target)
 
 function example1()
 {
-  show(add(add(add(add(add(get('a'), get('b')), get('c')), get('d')), get('z')), get('f')), 'ex1'); // -> abcdef
+  show(add(add(add(add(add(get('a'), get('b')), get('c')), get('d')), get('e')), get('f')), 'ex1'); // -> abcdef
 }
 
 // As long as you don't mutate promises directly
@@ -152,7 +152,6 @@ function example9()
 function runExamples()
 {
   example1();
-  /*
   example2();
   example3();
   example4();
@@ -166,6 +165,5 @@ function runExamples()
   example7();
   example8();
   example9();
-  */
 }
 
