@@ -79,8 +79,8 @@ var result = add(get("a"),
 
 Clearly you don't need such a long winded style if you just want to
 add some characters together- you can concatenate strings with +. But
-let's pretend for now that add is a function that combines two value
-of two resources in an interesting way.  In anycase, while this is
+let's pretend for now that add is a function that combines the value
+of two resources in an interesting way.  While this is
 considerably easier on the eyes, for the most part this doesn't look
 so much different structurally than the request version.
 
@@ -96,12 +96,12 @@ execute. And we still need to create an accumulator via a
 closure. 
 
 Compare this to the example above where the order of JavaScript
-function argument evalution ensures the proper order and no
+function argument evaluation ensures the proper order and no
 accumulator via a closure is required.
 
 For a second example let's examine something a little more
 sophisticated, this time let's consider how we would like to write the
-program logic- that is, not in terms of requests. Assuming get and add
+program logic- that is, not in terms of requests. Assuming *get* and *add*
 are as before:
 
 <pre>
@@ -114,31 +114,30 @@ In this example, value1 should be "abcda", value2 should be "af".
 
 Converting this to a sequence of requests presents some
 challenges. The simple (and least desirable solution) is to wait for
-all the resources put the final result together in last resource
+all the resources to load and put the final result together in last resource
 request. Why is this bad?
 
 # This code cannot be decomposed. You have to use it as one big
-   frozen block of functionality. Meh.
+  frozen block of functionality. Meh.
 # The computation of value2 must wait for value1! Meh.
 
-You could wait for value a and then put the computation of value1 and
-value2 inside of the callback for the request for a. But suppose you
-decide that you want to use the value of b in the computation of
-value2 as well. Now you need to wait for a *and* b. In MooTools this
-can be accomplished with the Groups class. But this also means you'll
-need to change the get function to not call Request.send(). 
+You could wait for value *a* and then put the computation of *value1* and
+*value2* inside of the callback for the request for *a*. But suppose you
+decide that you want to use the value of *b* in the computation of
+*value2* as well. Now you need to wait for a *and* b. In MooTools this
+can be accomplished with the *Groups* class. But this also means you'll
+need to change the get function to not call *Request.send()*. 
 
-Why is that? You do not want to miss that onComplete event under any
+Why is that? You do not want to miss that *onComplete* event under any
 circumstances- the event handler has to be in place before you make
-the request. So get can only return the Request object, it cannot send
-it. You now have to send the Requests yourself after you've set up your
-Group on all the Requests that you care about.
+the request. So get can only return the *Request* object, it cannot send
+it. You now have to send the requests yourself after you've set up your
+*Group* on all the requests that you care about.
 
 But say that while you are prototyping you realize the computation of the
-value2, "af", is needed elsewhere. Damn. You can't reuse the code you've
-written here because the computation of value2 cannot placed in its
-own function without duplicating code- the waiting logic for a and b
-that is shared by both the computation of value1 and value2. Wow, as your
+*value2*, "af", is needed elsewhere. Damn. You can reuse the code you've
+written here but not without duplicating code- the waiting logic for a and b
+that is shared by both the computation of *value1* and *value2*. Wow, as your
 requirements become more and more complex your code will become harder
 and harder to maintain.
 
