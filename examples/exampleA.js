@@ -1,5 +1,7 @@
 window.addEvent('domready', runExamples);
 
+Promise.debug = true;
+
 /*
   The promise decorator will automatically wrap the Request in a Promise instance.
 */
@@ -150,6 +152,7 @@ function example9()
 function runExamples()
 {
   example1();
+  /*
   example2();
   example3();
   example4();
@@ -163,5 +166,6 @@ function runExamples()
   example7();
   example8();
   example9();
+  */
 }
 

@@ -154,13 +154,21 @@ var Promise = new Class({
       this.fireEvent('error', this);
     }.bind(this));
 
-    if(!this.options.lazy) req.send();
+    if(!this.options.lazy) 
+    {
+      if(Promise.debug) req.options.async = false;
+      req.send();
+    }
   },
   
   
   realize: function()
   {
-    if(this.__req) this.__req.send();
+    if(this.__req)
+    {
+      if(Promise.debug) this.__req.options.async = false;
+      this.__req.send();
+    }
   },
   
   
@@ -242,6 +250,7 @@ var Promise = new Class({
   }
 });
 
+Promise.debug = false;
 
 Promise.isPromise = function(obj)
 {
@@ -360,28 +369,42 @@ function promise(fn)
     
     if(unrealized.length > 0)
     {
-      var p = new Promise();
+      if(!Promise.debug)
+      {
+        var p = new Promise();
       
-      Promise.watch(
-        args, 
-        function(realized) 
-        {
-          // hack so that this.parent(...) is meaningful even after an async call
-          var temp = this._current;
-          this._current = decorator._wrapper;
-          p.setValue(fn.apply(this, realized));
-          this._current = temp;
-        }.bind(this), 
-        function(errPromise)
-        {
-          var err = new Error("Failed to realize promise from " + errPromise.__req.options.url);
-          err.promise = errPromise;
-          err.source = fn.toSource();
-          err.sourceArgs = args;
-          throw err;
-        }.bind(this));
+        Promise.watch(
+          args, 
+          function(values) 
+          {
+            // hack so that this.parent(...) is meaningful even after an async call
+            var temp = this._current;
+            this._current = decorator._wrapper;
+            p.setValue(fn.apply(this, values));
+            this._current = temp;
+          }.bind(this),
+          function(errPromise)
+          {
+            var err = new Error("Failed to realize promise from " + errPromise.__req.options.url);
+            err.promise = errPromise;
+            err.source = fn.toSource();
+            err.sourceArgs = args;
+            throw err;
+          }.bind(this));
 
-      return p;
+        return p;
+      }
+      else
+      {
+        var temp = this._current;
+        unrealized.each($msg('realize'));
+        var values = unrealized.map(Promise.getValue);
+        this._current = decorator._wrapper;
+        result = fn.apply(this, values);
+        this._current = temp;
+        console.log(result);
+        return result;
+      }
     }
     else
     {
