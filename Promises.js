@@ -60,7 +60,7 @@ Function.implement({
     return this;
   },
   
-  thread: function()
+  comp: function()
   {
     var fns = $A(arguments)
     var self = this;
