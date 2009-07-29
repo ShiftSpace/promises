@@ -148,7 +148,9 @@ var Promise = new Class({
     this.__req = req;
     
     req.addEvent('onSuccess', function(responseText) {
-      this.setValue(this.applyOps(JSON.decode(responseText).data));
+      var json = JSON.decode(responseText);
+      var v = json.data || json;
+      this.setValue(this.applyOps(v));
     }.bind(this));
     req.addEvent('onFailure', function(responseText) {
       this.setValue(undefined);
