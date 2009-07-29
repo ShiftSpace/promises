@@ -492,7 +492,7 @@ var $if = function(test, trueExpr, falseExpr) {
     if($type(trueExpr) == "function") return trueExpr();
     return trueExpr;
   }
-  else
+  else if(falseExpr)
   {
     if($type(falseExpr) == "function") return falseExpr();
     return falseExpr;
@@ -509,7 +509,7 @@ var $iflet = function(binding, test, trueExpr, falseExpr)
     if($type(trueExpr) == "function") return trueExpr(arg);
     return trueExpr;
   }
-  else
+  else if(falseExpr)
   {
     arg = ((falseExpr.binding == binding) && v) || null;
     if($type(falseExpr) == "function") 
