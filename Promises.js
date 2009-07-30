@@ -1,3 +1,8 @@
+// ==Builder==
+// @required
+// @package           Promises
+// ==/Builder==
+
 /*
   Promises version 0.1
   
