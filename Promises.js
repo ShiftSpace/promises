@@ -154,7 +154,7 @@ var Promise = new Class({
     this.__req = req;
     
     req.addEvent('onSuccess', function(responseText) {
-      var json = (!this.options.bare) ? JSON.decode(responseText) : responseText;
+      var json = (!req.options.bare) ? JSON.decode(responseText) : responseText;
       var v = json.data || json;
       this.setValue(this.applyOps(v));
     }.bind(this));
