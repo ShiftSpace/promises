@@ -119,7 +119,8 @@ var Promise = new Class({
   defaults:
   {
     lazy: true,
-    reduce: null
+    reduce: null,
+    bare: false
   },
   
   initialize: function(value, options)
@@ -153,7 +154,7 @@ var Promise = new Class({
     this.__req = req;
     
     req.addEvent('onSuccess', function(responseText) {
-      var json = JSON.decode(responseText);
+      var json = (!this.options.bare) ? JSON.decode(responseText) : responseText;
       var v = json.data || json;
       this.setValue(this.applyOps(v));
     }.bind(this));
