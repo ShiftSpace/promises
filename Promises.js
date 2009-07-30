@@ -144,7 +144,7 @@ var Promise = new Class({
     }
     else if(value && $type(value) == "object")
     {
-      Promise.watch($H(value).getKeys(), function(promises) {
+      Promise.watch($H(value).getValues(), function(promises) {
         this.setValue($H(value).map(Promise.getValue).getClean());
       }.bind(this));
     }
