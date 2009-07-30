@@ -142,9 +142,15 @@ var Promise = new Class({
         this.setValue(result);
       }.bind(this));
     }
+    else if(value && $type(value) == "object")
+    {
+      Promise.watch(value.getKeys(), function(promises) {
+        this.setValue(value.map(Promise.getValue));
+      }.bind(this));
+    }
     else if(value)
     {
-      throw new Error("You can only create empty Promises, Promises from Request objects or from an array of values containing Promise instances.");
+      throw new Error("You can only create empty Promises, Promises from Request objects or from an array or hash of values containing Promise instances.");
     }
   },
 
