@@ -4,7 +4,7 @@
 // ==/Builder==
 
 /*
-  Promises version 0.1
+  Promises version 0.4
   
   An implementation of promises for MooTools:
   http://en.wikipedia.org/wiki/Futures_and_promises
@@ -294,7 +294,8 @@ var Promise = new Class({
   get: function()
   {
     var args = $A(arguments);
-    return (new Promise(this.realize())).op(function(v) { return $get.apply(null, [v].extend(args)); });
+    if(!this.isRealized()) return (new Promise(this.realize())).op(function(v) { return $get.apply(null, [v].extend(args)); });
+    return $get.apply(null, [this.value()].extend(args));
   }
 });
 
