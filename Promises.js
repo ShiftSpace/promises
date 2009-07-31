@@ -10,6 +10,24 @@
   http://en.wikipedia.org/wiki/Futures_and_promises
 */
 
+function $get(first, prop) {
+  var args = $A(arguments);
+  var rest = args.drop(2);
+  var next;
+  
+  if(rest.length == 0) return first[prop];
+  if(['object', 'array'].contains($type(first)))
+  {
+    next = first[prop];
+  }
+  if($type(next) == 'function')
+  {
+    next = first[prop]();
+  }
+  return (next == null) ? null : $get.apply(null, [next].concat(rest));
+};
+
+
 // we need a backreference to wrapper
 Class.extend({
   wrap: function(self, key, method)
@@ -142,16 +160,24 @@ var Promise = new Class({
         this.setValue(result);
       }.bind(this));
     }
-    else if(value && $type(value) == "object")
+    else if(value && !Promise.isPromise(value) && $type(value) == "object")
     {
       Promise.watch($H(value).getValues(), function(promises) {
         this.setValue($H(value).map(Promise.getValue).getClean());
       }.bind(this));
     }
+    else if(Promise.isPromise(value))
+    {
+      value.addEvent('realized', function() {
+        this.setValue(value.value());
+      }.bind(this))
+    }
     else if(value)
     {
       throw new Error("You can only create empty Promises, Promises from Request objects or from an array or hash of values containing Promise instances.");
     }
+    
+    return this;
   },
 
   
@@ -179,11 +205,13 @@ var Promise = new Class({
   
   realize: function()
   {
-    if(this.__req)
+    if(this.__req && !this.__realizing)
     {
+      this.__realizing = true;
       if(Promise.debug) this.__req.options.async = false;
       this.__req.send();
     }
+    return this;
   },
   
   
@@ -227,8 +255,6 @@ var Promise = new Class({
   
   setValue: function(value)
   {
-    //if(value === null) return null;
-    
     if(value && value.xhr)
     {
       this.initReq(value);
@@ -262,6 +288,13 @@ var Promise = new Class({
   isNotRealized: function()
   {
     return !this.__realized;
+  },
+  
+  
+  get: function()
+  {
+    var args = $A(arguments);
+    return (new Promise(this.realize())).op(function(v) { return $get.apply(null, [v].extend(args)); });
   }
 });
 
