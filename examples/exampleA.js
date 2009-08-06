@@ -137,16 +137,6 @@ function example8()
   show(foo);
 }
 
-// $iflet
-var testhash = {};
-function example9()
-{
-  testhash["foo"] = $iflet("sum", add3(get("7"), add3(get("10"), get("7"))),
-                           show.receive("sum"),
-                           function() { delete testhash["foo"]; return null; });
-  show(testhash["foo"]);
-}
-
 // Run Examples
 // ============
 function runExamples()
@@ -164,6 +154,5 @@ function runExamples()
   
   example7();
   example8();
-  example9();
 }
 

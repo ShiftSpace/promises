@@ -544,24 +544,3 @@ var $if = function(test, trueExpr, falseExpr) {
     return falseExpr;
   }
 }.asPromise();
-
-
-var $iflet = function(binding, test, trueExpr, falseExpr)
-{
-  var arg;
-  if(test)
-  {
-    arg = ((trueExpr.binding == binding) && v) || null;
-    if($type(trueExpr) == "function") return trueExpr(arg);
-    return trueExpr;
-  }
-  else if(falseExpr)
-  {
-    arg = ((falseExpr.binding == binding) && v) || null;
-    if($type(falseExpr) == "function") 
-    {
-      return falseExpr(arg);
-    }
-    return falseExpr;
-  }
-}.asPromise();
