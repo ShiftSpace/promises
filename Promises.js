@@ -67,8 +67,7 @@ Function.implement({
   asPromise: function() { return this.decorate(promise); }
 });
 
-function $msg(methodName) 
-{
+function $msg(methodName) {
   var rest = $A(arguments).drop(1);
   return function(obj) {
     return obj[methodName].apply(obj, rest);
