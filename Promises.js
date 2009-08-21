@@ -308,7 +308,7 @@ function promise(fn) {
           function(errPromise) {
             var err = new Error("Failed to realize promise from " + errPromise.__req.options.url);
             err.promise = errPromise;
-            err.source = fn.toSource();
+            err.source = fn.toString();
             err.sourceArgs = args;
             throw err;
           }.bind(this));
@@ -377,7 +377,7 @@ function pre(conditions, error) {
           var err = new Error("Arguments did not match pre conditions.");
           err.args = args;
           err.conditions = conditions;
-          err.source = fn.toSource();
+          err.source = fn.toString();
           throw err;
         } else if($type(error) == 'function') {
           error(passed);
