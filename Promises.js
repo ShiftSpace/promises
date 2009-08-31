@@ -1,8 +1,3 @@
-// ==Builder==
-// @required
-// @package           Promises
-// ==/Builder==
-
 /*
   Promises version 0.4
   
@@ -11,7 +6,7 @@
 */
 
 function $get(first, prop) {
-  var args = $A(arguments), rest = args.drop(2), next;
+  var args = $A(arguments), rest = args.rest(2), next;
   if(rest.length == 0) return first[prop];
   if(['object', 'array'].contains($type(first))) next = first[prop];
   if($type(next) == 'function') next = first[prop]();
@@ -36,7 +31,7 @@ Class.extend({
 });
 
 Array.implement({
-  drop: function(n) { return this.slice(n, this.length); }
+  rest: function(n) { return this.slice(n || 1, this.length); }
 });
 
 Function.implement({
@@ -68,7 +63,7 @@ Function.implement({
 });
 
 function $msg(methodName) {
-  var rest = $A(arguments).drop(1);
+  var rest = $A(arguments).rest();
   return function(obj) {
     return obj[methodName].apply(obj, rest);
   };
