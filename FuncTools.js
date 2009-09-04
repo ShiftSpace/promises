@@ -101,18 +101,6 @@ Function.implement({
 });
 var $comp = Function.comp;
 
-/*
-  Decorator: memoize
-    Because lazy-loading of resources is so common, I've included
-    memoize. This will memoize the return values of a function depending
-    on the arguments passed in. Note that if you call a function frequently
-    with many different kinds of arguments you will consume memory very
-    quickly. This decorator works best with arguments not containing any
-    object values. This is becuase the args array is JSON encoded into a
-    string for comparison. So arguments composed of strings, integers, and 
-    arrays work best. Normally this would be a problem but for acecssing remote 
-    resources this limitation is fine.
-*/
 function memoize(fn) {
   var table = {};
   return function memoized() {
