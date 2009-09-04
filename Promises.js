@@ -5,6 +5,10 @@
   http://en.wikipedia.org/wiki/Futures_and_promises
 */
 
+function $arglist(fn) {
+  return fn.toString().match(/function \S*\((.*?)\)/)[1].split(',');
+};
+
 function $get(first, prop) {
   var args = $A(arguments), rest = args.rest(2), next;
   if(rest.length == 0) return first[prop];
@@ -36,8 +40,10 @@ Array.implement({
 
 Function.implement({
   decorate: function() {
-    var decorators = $A(arguments), resultFn = this, decorator;
+    var decorators = $A(arguments), orig = resultFn = this, decorator;
     while(decorator = decorators.pop()) resultFn = decorator(resultFn);
+    resultFn._arglist = $arglist(orig);
+    resultFn._decorated = orig;
     return resultFn;
   },
 
