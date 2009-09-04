@@ -8,6 +8,13 @@ function $not(fn) {
   }
 }
 
+function $range(a, b) {
+  var start = (b && a) || 0, end = b || a;
+  return $repeat(end-start, function() {
+    return start++;
+  });
+}
+
 function $isnull(v) { return v === null; };
 
 function $notnull(v) { return v !== null; };
