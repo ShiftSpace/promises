@@ -153,7 +153,6 @@ function example9()
 // ============
 function runExamples()
 {
-  /*
   example1();
   example2();
   example3();
@@ -167,7 +166,6 @@ function runExamples()
   
   example7();
   example8();
-  */
   example9();
 }
 
