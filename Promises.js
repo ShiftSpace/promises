@@ -1,5 +1,5 @@
 /*
-  Promises version 0.5
+  Promises version 0.6
   
   An implementation of promises for MooTools:
   http://en.wikipedia.org/wiki/Futures_and_promises
