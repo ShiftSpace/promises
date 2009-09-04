@@ -52,6 +52,8 @@ Function.implement({
   }
 });
 
+var $comp = Function.comp;
+
 Function.implement({
   asPromise: function() { return this.decorate(promise); }
 });
