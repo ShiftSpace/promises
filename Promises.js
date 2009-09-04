@@ -116,7 +116,7 @@ var Promise = new Class({
       value.addEvent('realized', function() {
         this.setValue(value.value());
       }.bind(this))
-    } else {
+    } else if(typeof value != 'undefined') {
       this.__plain = true;
       this.setValue(value, false);
     }
