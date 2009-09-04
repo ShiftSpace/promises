@@ -10,9 +10,7 @@ function $not(fn) {
 
 function $range(a, b) {
   var start = (b && a) || 0, end = b || a;
-  return $repeat(end-start, function() {
-    return start++;
-  });
+  return $repeat(end-start, function() { return start++; });
 }
 
 function $isnull(v) { return v === null; };
@@ -47,11 +45,6 @@ function $arity() {
     return dispatch[args.length].apply(this, args);
   }
 };
-
-var sum = $arity(
-  function(a) { return a; },
-  function(a, b) { return a + (($type(b) == 'array') ? b.first() || 0 : b); }
-);
 
 function $reduce(fn, ary) {
   ary = $A(ary);
