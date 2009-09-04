@@ -111,7 +111,7 @@ var Promise = new Class({
         this.setValue(value.value());
       }.bind(this))
     } else if(value) {
-      throw new Error("You can only create empty Promises, Promises from Request objects or from an array or hash of values containing Promise instances.");
+      this.setValue(value, false);
     }
     return this;
   },
@@ -173,16 +173,20 @@ var Promise = new Class({
   
   hasOps: function() { return this.__ops.length > 0; },
   
-  setValue: function(value) {
+  setValue: function(value, notify) {
     if(value && value.xhr) {
       this.initReq(value);
     } else {
       this.__value = value
-      if(!this.__realized) {
+      if(!this.__realized && notify !== false) {
         this.__realized = true;
-        this.fireEvent('realized', this.__value);
+        this.notify();
       }
     }
+  },
+  
+  notify: function() {
+    this.fireEvent('realized', this.value());
   },
   
   value: function() {
