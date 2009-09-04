@@ -202,8 +202,12 @@ var Promise = new Class({
 
   get: function() {
     var args = $A(arguments);
-    if(!this.isRealized()) return (new Promise(this.realize())).op(function(v) { return $get.apply(null, [v].extend(args)); });
+    if(!this.isRealized()) return (new Promise(this, {lazy:this.options.lazy})).op(function(v) { return $get.apply(null, [v].extend(args)); });
     return $get.apply(null, [this.value()].extend(args));
+  },
+  
+  fn: function(fn) {
+    return (new Promise(this, {lazy:this.options.lazy})).op(fn);
   }
 });
 var $P = $promise = function(v, options) { return new Promise(v, options); };
