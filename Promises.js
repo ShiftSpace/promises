@@ -188,8 +188,8 @@ var Promise = new Class({
     }
   },
   
-  value: function() {
-     if(this.hasOps()) this.__value = this.applyOps(this.__value);
+  value: function(applyOps) {
+     if(this.hasOps() && applyOps !== false) this.__value = this.applyOps(this.__value);
      return this.__value;
   },
   
