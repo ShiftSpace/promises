@@ -137,10 +137,23 @@ function example8()
   show(foo);
 }
 
+// Promises with regular values
+function example9()
+{
+  var x = function(x) { return x * 2; }.asPromise();
+  var p1 = new Promise(5);
+  var p2 = x(p1);
+  show(p2);
+  p1.realize();
+  window.p1 = p1;
+  window.p2 = p2;
+}
+
 // Run Examples
 // ============
 function runExamples()
 {
+  /*
   example1();
   example2();
   example3();
@@ -154,5 +167,7 @@ function runExamples()
   
   example7();
   example8();
+  */
+  example9();
 }
 

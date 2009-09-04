@@ -111,6 +111,7 @@ var Promise = new Class({
         this.setValue(value.value());
       }.bind(this))
     } else if(value) {
+      this.__plain = true;
       this.setValue(value, false);
     }
     return this;
@@ -141,6 +142,8 @@ var Promise = new Class({
       this.__realizing = true;
       if(Promise.debug) this.__req.options.async = false;
       this.__req.send();
+    } else if(this.__plain) {
+      this.setValue(this.value());
     }
     return this;
   },
@@ -180,13 +183,9 @@ var Promise = new Class({
       this.__value = value
       if(!this.__realized && notify !== false) {
         this.__realized = true;
-        this.notify();
+        this.fireEvent('realized', this.__value);
       }
     }
-  },
-  
-  notify: function() {
-    this.fireEvent('realized', this.value());
   },
   
   value: function() {
