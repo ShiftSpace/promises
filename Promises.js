@@ -108,7 +108,10 @@ var Promise = new Class({
         var result = (this.options.reduce && this.options.reduce.apply(null, values)) || values;
         this.setValue(result);
       }.bind(this));
-    } else if(value && !Promise.isPromise(value) && $type(value) == "object") {
+    } else if(value && 
+              !Promise.isPromise(value) && 
+              $type(value) == "object" && 
+              $H(value).getValues().some(Promise.isPromise)) {
       Promise.watch($H(value).getValues(), function(promises) {
         this.setValue($H(value).map(Promise.getValue).getClean());
       }.bind(this));
