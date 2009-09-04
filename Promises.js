@@ -89,7 +89,7 @@ var Promise = new Class({
   name: "Promise",
   
   defaults: {
-    lazy: true,
+    lazy: false,
     reduce: null,
     bare: false,
     meta: null
@@ -137,10 +137,6 @@ var Promise = new Class({
       this.setValue(undefined);
       this.fireEvent('error', this);
     }.bind(this));
-    if(!this.options.lazy)  {
-      if(Promise.debug) req.options.async = false;
-      req.send();
-    }
   },
   
   realize: function() {
@@ -199,13 +195,10 @@ var Promise = new Class({
     return this.__value;
   },
   
-  isRealized: function() {
-    return this.__realized;
-  },
-  
-  isNotRealized: function() {
-    return !this.__realized;
-  },
+  isRealized: function() { return this.__realized; },
+  isNotRealized: function() { return !this.__realized; },
+  isLazy: function() { return this.options.lazy; },
+  isNotLazy: function() { return !this.options.lazy; },
 
   get: function() {
     var args = $A(arguments);
@@ -214,6 +207,7 @@ var Promise = new Class({
   }
 });
 var $P = $promise = function(v, options) { return new Promise(v, options); };
+var $lazy = function(v, options) { return new Promise(v, $merge({lazy:true}, options)); };
 
 Promise.debug = false;
 
@@ -279,7 +273,7 @@ Promise.watch = function(args, cb, errCb) {
         aPromise.addEvent('error', errCb.bind(null, [aPromise]));
       });
     }
-    unrealized.each($msg('realize'));
+    unrealized.filter($msg('isNotLazy')).each($msg('realize'));
   } else {
     cb(Promise.toValues(args))
   }
