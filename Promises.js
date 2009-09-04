@@ -1,5 +1,5 @@
 /*
-  Promises version 0.4
+  Promises version 0.5
   
   An implementation of promises for MooTools:
   http://en.wikipedia.org/wiki/Futures_and_promises
@@ -13,7 +13,7 @@ function $get(first, prop) {
   return (next == null) ? null : $get.apply(null, [next].concat(rest));
 };
 
-// we need a backreference to wrapper
+// We need a backreference to wrapper to support usage from within classes - David
 Class.extend({
   wrap: function(self, key, method) {
     if (method._origin) method = method._origin;
@@ -40,19 +40,13 @@ Function.implement({
     while(decorator = decorators.pop()) resultFn = decorator(resultFn);
     return resultFn;
   },
-  
-  rewind: function(bind, args) { return this._wrapper.bind(bind, args); },
-  
-  receive: function(binding) {
-    this.binding = binding;
-    return this;
-  },
-  
+
   comp: function() {
     var fns = $A(arguments), self = this;
     return function() {
-      var args = $A(arguments), result = self.apply(this, args), fn;
-      while(fn = fns.shift()) result = fn.apply(null, [result]);
+      var temp = $A(fns);
+      var args = $A(arguments), result = (self && $type(self) == 'function') ? self.apply(this, args) : null, fn;
+      while(fn = temp.shift()) result = fn.apply(null, (result && [result]) || args);
       return result;
     }
   }
