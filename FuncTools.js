@@ -25,7 +25,7 @@ function $repeat(n, v) {
 };
 
 function $arglist(fn) {
-  return fn.toString().match(/function \S*\((.*?)\)/)[1].split(',');
+  return fn._arglist || fn.toString().match(/function \S*\((.*?)\)/)[1].split(',');
 };
 
 function $arity() {
