@@ -213,6 +213,7 @@ var Promise = new Class({
     return $get.apply(null, [this.value()].extend(args));
   }
 });
+$promise = function(v, options) { return new Promise(v, options); };
 
 Promise.debug = false;
 
