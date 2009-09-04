@@ -89,13 +89,15 @@ var Promise = new Class({
   defaults: {
     lazy: true,
     reduce: null,
-    bare: false
+    bare: false,
+    meta: null
   },
   
   initialize: function(value, options) {
     this.setOptions(this.defaults, options);
     this.__realized = false;
     this.__ops = [];
+    if(this.options.meta) this.setMeta(this.options.meta);
     if(value && value.xhr) {
       this.initReq(value);
     } else if(value && $type(value) == "array") {
@@ -117,6 +119,9 @@ var Promise = new Class({
     }
     return this;
   },
+  
+  setMeta: function(meta) { this.__meta = meta; },
+  meta: function() { return this.__meta; },
   
   initReq: function(req) {
     this.__req = req;
