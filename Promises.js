@@ -116,7 +116,7 @@ var Promise = new Class({
       value.addEvent('realized', function() {
         this.setValue(value.value());
       }.bind(this))
-    } else if(value) {
+    } else {
       this.__plain = true;
       this.setValue(value, false);
     }
@@ -186,7 +186,7 @@ var Promise = new Class({
     if(value && value.xhr) {
       this.initReq(value);
     } else {
-      this.__value = value
+      this.__value = value;
       if(!this.__realized && notify !== false) {
         this.__realized = true;
         this.fireEvent('realized', this.__value);
@@ -195,8 +195,8 @@ var Promise = new Class({
   },
   
   value: function(applyOps) {
-     if(this.hasOps() && applyOps !== false) this.__value = this.applyOps(this.__value);
-     return this.__value;
+    if(this.hasOps() && applyOps !== false) this.__value = this.applyOps(this.__value);
+    return this.__value;
   },
   
   isRealized: function() {
