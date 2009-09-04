@@ -207,7 +207,8 @@ var Promise = new Class({
   },
   
   fn: function(fn) {
-    return (new Promise(this, {lazy:this.options.lazy})).op(fn);
+    if(!this.isRealized()) return (new Promise(this, {lazy:this.options.lazy})).op(fn);
+    return fn(this.value());
   }
 });
 var $P = $promise = function(v, options) { return new Promise(v, options); };
