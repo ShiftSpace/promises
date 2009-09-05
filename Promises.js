@@ -5,71 +5,9 @@
   http://en.wikipedia.org/wiki/Futures_and_promises
 */
 
-function $arglist(fn) {
-  return fn._arglist || fn.toString().match(/function \S*\((.*?)\)/)[1].split(',');
-};
-
-function $get(first, prop) {
-  var args = $A(arguments), rest = args.rest(2), next;
-  if(rest.length == 0) return first[prop];
-  if(['object', 'array'].contains($type(first))) next = first[prop];
-  if($type(next) == 'function') next = first[prop]();
-  return (next == null) ? null : $get.apply(null, [next].concat(rest));
-};
-
-// We need a backreference to wrapper to support usage from within classes - David
-Class.extend({
-  wrap: function(self, key, method) {
-    if (method._origin) method = method._origin;
-    var wrapper = function() {
-      if (method._protected && this._current == null) throw new Error('The method "' + key + '" cannot be called.');
-      var caller = this.caller, current = this._current;
-      this.caller = current; this._current = arguments.callee;
-      var result = method.apply(this, arguments);
-      this._current = current; this.caller = caller;
-      return result;
-    }.extend({_owner: self, _origin: method, _name: key});
-    method._wrapper = wrapper;
-    return wrapper;
-  }
-});
-
-Array.implement({
-  rest: function(n) { return this.slice(n || 1, this.length); }
-});
-
-Function.implement({
-  decorate: function() {
-    var decorators = $A(arguments), orig = resultFn = this, decorator;
-    while(decorator = decorators.pop()) resultFn = decorator(resultFn);
-    resultFn._arglist = $arglist(orig);
-    resultFn._decorated = orig;
-    return resultFn;
-  },
-
-  comp: function() {
-    var fns = $A(arguments), self = this;
-    return function() {
-      var temp = $A(fns);
-      var args = $A(arguments), result = (self && $type(self) == 'function') ? self.apply(this, args) : null, fn;
-      while(fn = temp.shift()) result = fn.apply(null, (result && [result]) || args);
-      return result;
-    }
-  }
-});
-
-var $comp = Function.comp;
-
 Function.implement({
   asPromise: function() { return this.decorate(promise); }
 });
-
-function $msg(methodName) {
-  var rest = $A(arguments).rest();
-  return function(obj) {
-    return obj[methodName].apply(obj, rest);
-  };
-}
 
 /*
   Class: Promise
@@ -216,6 +154,7 @@ var Promise = new Class({
     return fn(this.value());
   }
 });
+
 var $P = $promise = function(v, options) { return new Promise(v, options); };
 var $lazy = function(v, options) { return new Promise(v, $merge({lazy:true, plain:true}, options)); };
 
@@ -335,64 +274,6 @@ function promise(fn) {
     } else {
       var porv = Promise.promiseOrValue(fn.apply(this, args.map(Promise.getValue)));
       return porv;
-    }
-  }
-}
-
-/*
-  Decorator: memoize
-    Because lazy-loading of resources is so common, I've included
-    memoize. This will memoize the return values of a function depending
-    on the arguments passed in. Note that if you call a function frequently
-    with many different kinds of arguments you will consume memory very
-    quickly. This decorator works best with arguments not containing any
-    object values. This is becuase the args array is JSON encoded into a
-    string for comparison. So arguments composed of strings, integers, and 
-    arrays work best. Normally this would be a problem but for acecssing remote 
-    resources this limitation is fine.
-*/
-function memoize(fn) {
-  var table = {};
-  return function memoized() {
-    var args = $A(arguments);
-    var enc = JSON.encode(args);
-    if(!table[enc]) {
-      var result = fn.apply(this, args);
-      table[enc] = result;
-      return result;
-    } else {
-      return table[enc];
-    }
-  };
-}
-
-/*
-  Decorator: pre
-*/
-function pre(conditions, error) {
-  error = error || false;
-  return function preDecorator(fn) {
-    return function() {
-      var args = $A(arguments);
-      var i = 0;
-      var passed = conditions.map(function(afn) {
-        var result = afn(args[i]);
-        i++;
-        return result;
-      });
-      if(passed.indexOf(false) == -1) {
-        return fn.apply(this, args);
-      } else {
-        if($type(error) == 'boolean' && error) {
-          var err = new Error("Arguments did not match pre conditions.");
-          err.args = args;
-          err.conditions = conditions;
-          err.source = fn.toString();
-          throw err;
-        } else if($type(error) == 'function') {
-          error(passed);
-        }
-      }
     }
   }
 }
