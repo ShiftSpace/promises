@@ -475,3 +475,5 @@ doB should not depend on the behavior of doA at all. Without Promises
 if you changed something in doA that change would appear in doB because
 you called doA first. However, using Promises is very much like writing code
 with threads. You have no such guarantees.
+
+h2. Lazy Values
