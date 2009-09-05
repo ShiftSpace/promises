@@ -92,13 +92,15 @@ var Promise = new Class({
     lazy: false,
     reduce: null,
     bare: false,
-    meta: null
+    meta: null,
+    plain: false
   },
   
   initialize: function(value, options) {
     this.setOptions(this.defaults, options);
     this.__realized = false;
     this.__ops = [];
+    this.__plain = this.options.plain;
     if(this.options.meta) this.setMeta(this.options.meta);
     if(value && value.xhr) {
       this.initReq(value);
@@ -215,7 +217,7 @@ var Promise = new Class({
   }
 });
 var $P = $promise = function(v, options) { return new Promise(v, options); };
-var $lazy = function(v, options) { return new Promise(v, $merge({lazy:true}, options)); };
+var $lazy = function(v, options) { return new Promise(v, $merge({lazy:true, plain:true}, options)); };
 
 Promise.debug = false;
 
