@@ -164,6 +164,7 @@ Hash.implement({
 function $msg(methodName) {
   var rest = $A(arguments).rest();
   return function(obj) {
-    return obj[methodName].apply(obj, rest);
+    var method = obj[methodName];
+    if(method && $type(method) == 'function') return method.apply(obj, rest);
   };
 }
