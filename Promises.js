@@ -4,7 +4,7 @@
 // ==/Builder==
 
 /*
-  Promises version 0.6
+  Promises version 0.7
   
   An implementation of promises for MooTools:
   http://en.wikipedia.org/wiki/Futures_and_promises
