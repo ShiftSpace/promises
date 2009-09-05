@@ -116,6 +116,34 @@ function memoize(fn) {
   };
 }
 
+function pre(conditions, error) {
+  error = error || false;
+  return function preDecorator(fn) {
+    return function() {
+      var args = $A(arguments);
+      var i = 0;
+      var passed = conditions.map(function(afn) {
+        var result = afn(args[i]);
+        i++;
+        return result;
+      });
+      if(passed.indexOf(false) == -1) {
+        return fn.apply(this, args);
+      } else {
+        if($type(error) == 'boolean' && error) {
+          var err = new Error("Arguments did not match pre conditions.");
+          err.args = args;
+          err.conditions = conditions;
+          err.source = fn.toString();
+          throw err;
+        } else if($type(error) == 'function') {
+          error(passed);
+        }
+      }
+    }
+  }
+}
+
 // We need a backreference to wrapper to support decorator usage from within classes - David
 Class.extend({
   wrap: function(self, key, method) {
