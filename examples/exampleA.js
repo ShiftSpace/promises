@@ -145,8 +145,17 @@ function example9()
   var p2 = x(p1);
   show(p2);
   p1.realize();
-  window.p1 = p1;
-  window.p2 = p2;
+}
+
+function example10()
+{
+  var x = function(a, b) { return a * b; }.asPromise();
+  var p1 = $promise(3);
+  var p2 = $promise(4);
+  var p3 = x(p1, p2);
+  show(p3);
+  p1.realize();
+  p2.realize();
 }
 
 // Run Examples
@@ -167,5 +176,6 @@ function runExamples()
   example7();
   example8();
   example9();
+  example10();
 }
 
