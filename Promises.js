@@ -36,7 +36,8 @@ var Promise = new Class({
     reduce: null,
     bare: false,
     meta: null,
-    plain: false
+    plain: false,
+    async: false
   },
   
   initialize: function(value, options) {
@@ -44,6 +45,7 @@ var Promise = new Class({
     this.__realized = false;
     this.__ops = [];
     this.__plain = this.options.plain;
+    this.__async = this.options.async;
     if(this.options.meta) this.setMeta(this.options.meta);
     if(value && value.xhr) {
       this.initReq(value);
@@ -87,10 +89,18 @@ var Promise = new Class({
     }.bind(this));
   },
   
+  setAsync: function(val) {
+    this.__async = val;
+  },
+  
+  isAsync: function() {
+    return this.__async;
+  },
+  
   realize: function() {
     if(this.__req && !this.__realizing) {
       this.__realizing = true;
-      if(Promise.debug) this.__req.options.async = false;
+      if(Promise.debug || this.isAsync()) this.__req.options.async = false;
       this.__req.send();
     } else if(this.__plain) {
       this.setValue(this.value());
