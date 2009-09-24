@@ -178,6 +178,6 @@ function runExamples()
   example8();
   example9();
   example10();
-  console.log(">>>>>>>>>>>>>>>>>>>> runExamples");
+  console.log(">>>>>>>>>>>>>>>>>>>> EXIT runExamples");
 }
 
