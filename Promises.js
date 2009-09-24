@@ -295,10 +295,10 @@ function promise(fn) {
 
 var $if = function(test, trueExpr, falseExpr) {
   if(test) {
-    if($type(trueExpr) == "function") return trueExpr();
+    if($type(trueExpr) == "function") return trueExpr(test);
     return trueExpr;
   } else if(falseExpr) {
-    if($type(falseExpr) == "function") return falseExpr();
+    if($type(falseExpr) == "function") return falseExpr(test);
     return falseExpr;
   }
 }.asPromise();
