@@ -162,6 +162,7 @@ function example10()
 // ============
 function runExamples()
 {
+  console.log(">>>>>>>>>>>>>>>>>>>> ENTER runExamples");
   example1();
   example2();
   example3();
@@ -177,5 +178,6 @@ function runExamples()
   example8();
   example9();
   example10();
+  console.log(">>>>>>>>>>>>>>>>>>>> runExamples");
 }
 
