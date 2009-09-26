@@ -300,3 +300,8 @@ var $if = function(test, trueExpr, falseExpr) {
     return falseExpr;
   }
 }.asPromise();
+
+var $and = function() {
+  var args = $A(arguments);
+  return args.every($identity);
+}.asPromise();
