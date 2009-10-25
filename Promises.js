@@ -129,8 +129,6 @@ var Promise = new Class({
     return this.value();
   },
   
-  hasOps: function() { return this.__ops.length > 0; },
-  
   setValue: function(value, notify) {
     if(value && value.xhr) {
       this.initReq(value);
@@ -138,13 +136,13 @@ var Promise = new Class({
       this.__value = value;
       if(!this.__realized && notify !== false) {
         this.__realized = true;
-        this.fireEvent('realized', this.__value);
+        this.fireEvent('realized', this.applyOps(this.__value));
       }
     }
   },
   
   value: function(applyOps) {
-    if(this.hasOps() && applyOps !== false) this.__value = this.applyOps(this.__value);
+    if(applyOps !== false) this.__value = this.applyOps(this.__value);
     return this.__value;
   },
   
@@ -296,4 +294,9 @@ var $if = function(test, trueExpr, falseExpr) {
     if($type(falseExpr) == "function") return falseExpr(test);
     return falseExpr;
   }
+}.asPromise();
+
+var $and = function() {
+  var args = $A(arguments);
+  return args.every($identity);
 }.asPromise();
