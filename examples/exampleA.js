@@ -89,7 +89,7 @@ function example5()
 var example6 = function()
 {
   return get("a");
-}.decorate(promise, memoize);
+}.decorate(promise, Function.memoize);
 
 // Preconditions
 // =============
@@ -114,12 +114,12 @@ var oddEven = [odd, even];
 var add2 = function(a, b)
 {
   return a + b;
-}.decorate(promise, pre(evenOdd, true))
+}.decorate(promise, Function.pre(evenOdd, true))
 
 var add3 = function(a, b)
 {
   return a + b;
-}.decorate(promise, pre(evenOdd, console.log))
+}.decorate(promise, Function.pre(evenOdd, console.log))
 
 function example7()
 {
