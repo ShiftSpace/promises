@@ -153,8 +153,8 @@ var Promise = new Class({
 
   get: function() {
     var args = $A(arguments);
-    if(!this.isRealized()) return (new Promise(this, {lazy:this.options.lazy})).op(function(v) { return $get.apply(null, [v].extend(args)); });
-    return $get.apply(null, [this.value()].extend(args));
+    if(!this.isRealized()) return (new Promise(this, {lazy:this.options.lazy})).op(function(v) { return Function.get.apply(null, [v].extend(args)); });
+    return Function.get.apply(null, [this.value()].extend(args));
   },
   
   fn: function(fn) {
@@ -214,7 +214,7 @@ Promise.promiseOrValue = function(v) {
 */
 Promise.watch = function(args, cb, errCb) {
   var promises = args.filter(Promise.isPromise);
-  var unrealized = promises.filter($msg("isNotRealized"));
+  var unrealized = promises.filter(Function.msg("isNotRealized"));
   if(unrealized.length > 0) {
     var watching = new Group(unrealized);
     watching.addEvent('realized', function() {
@@ -230,13 +230,13 @@ Promise.watch = function(args, cb, errCb) {
         aPromise.addEvent('error', errCb.bind(null, [aPromise]));
       });
     }
-    unrealized.filter($msg('isNotLazy')).each($msg('realize'));
+    unrealized.filter(Function.msg('isNotLazy')).each(Function.msg('realize'));
   } else {
     cb(Promise.toValues(args))
   }
 }
 
-Promise.allRealized = function(vs) { return vs.filter(Promise.isPromise).every($msg("isRealized")); }
+Promise.allRealized = function(vs) { return vs.filter(Promise.isPromise).every(Function.msg("isRealized")); }
 
 /*
   Decorator: promise
@@ -249,7 +249,7 @@ function promise(fn) {
   return function decorator() {
     var args = $A(arguments);
     var promises = args.filter(Promise.isPromise);
-    var unrealized = promises.filter($msg('isNotRealized'));
+    var unrealized = promises.filter(Function.msg('isNotRealized'));
     if(unrealized.length > 0) {
       if(!Promise.debug) {
         var p = new Promise();
@@ -272,7 +272,7 @@ function promise(fn) {
         return p;
       } else {
         var temp = this._current;
-        unrealized.each($msg('realize'));
+        unrealized.each(Function.msg('realize'));
         var values = args.map(Promise.getValue);
         this._current = decorator._wrapper;
         result = fn.apply(this, values);
