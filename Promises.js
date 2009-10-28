@@ -80,7 +80,7 @@ var Promise = new Class({
     this.__req = req;
     req.addEvent('onSuccess', function(responseText) {
       var json = (!req.options.bare) ? JSON.decode(responseText) : responseText;
-      var v = json.data || json;
+      var v = (json.data !== null && json.data !== undefined) ? json.data : json;
       this.setValue(this.applyOps(v));
     }.bind(this));
     req.addEvent('onFailure', function(responseText) {
@@ -196,7 +196,8 @@ Promise.toValues = function(ary) {
   Function: Promise.promiseOrValue
     If v is a Request object returns a promise, otherwise
     if v is Promise which has been realized returns the promises
-    value. If it is not a promise, the value is simply returned.
+    value. If it is an unrealized promise or not a promise,
+    the promise/value is simply returned.
 */
 Promise.promiseOrValue = function(v) {
   if(v && v.xhr) return new Promise(v);
