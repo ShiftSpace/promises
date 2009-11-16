@@ -477,3 +477,24 @@ you called doA first. However, using Promises is very much like writing code
 with threads. You have no such guarantees.
 
 h2. Lazy Values
+
+Sometimes it's very useful to be able to operate on values that don't actually
+exist yet. This is useful even when no remote request are involved. For example:
+
+<pre>
+var add = function(a, b) { return a + b; }.decorate(promise);
+var a = $lazy();
+var b = $lazy();
+var sum = add(a, b);
+
+sum.value(); // -> undefined
+a.setValue(2);
+sum.value(); // -> undefined 
+b.setValue(3);
+sum.value(); // -> 5
+</pre>
+
+Pretty cool.
+
+Things get really interesting when you come to realize you can use this functionality
+with the DOM :)
