@@ -1,3 +1,14 @@
+h1. Installation
+
+Promises relies on the "FuncTools":http://github.com/ShiftSpace/functools library. In order to hack on Promises or use it run the following:
+
+<pre class="console">
+$ git clone git://github.com/ShiftSpace/promises.git
+$ cd promises
+$ git submodule init
+$ git submodule update
+</pre>
+
 h1. Rationale
 
 The following is written with MooTools in mind however the Promises
