@@ -110,6 +110,8 @@ Compare this to the example above where the order of JavaScript
 function argument evaluation ensures the proper order and no
 accumulator via a closure is required.
 
+h1. Traditional AJAX requests don't compose
+
 For a second example let's examine something a little more
 sophisticated, this time let's consider how we would like to write the
 program logic- that is, not in terms of requests. Assuming *get* and *add*
@@ -172,7 +174,9 @@ Hmm...
 
 Now that we understand the problem space, how does one go about
 solving this? Is it just impossible for requests to be written in such a
-way that we can compose them? 
+way that we can compose them?
+
+h1. A JavaScript-y Solution
 
 While there have been several attempts to do such a thing many of the
 solutions require the programmer to adopt a library that is painfully
@@ -222,6 +226,8 @@ decorator called *promise* that does a few interesting things:
   be guaranteed to be realized. The upside is that you call these
   functions with non-Promise arguments and they will work just fine!
 # Reread 3. This means you can sanely unit test AJAX code!
+
+h1. A Silly Example
 
 Enough talk, here's an example:
 
