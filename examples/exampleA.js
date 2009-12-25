@@ -10,7 +10,7 @@ var get = function(rsrc)
   return new Request({
     url: 'data/'+rsrc+'.json'
   });
-}.decorate(promise)
+}.decorate(promise);
 
 /*
   An adding function that can recieve promises.
@@ -18,7 +18,7 @@ var get = function(rsrc)
 var add = function(a, b) 
 {
   return a + b;
-}.decorate(promise)
+}.decorate(promise);
 
 /*
   A logging function that can recieve promises.
@@ -27,13 +27,13 @@ var show = function show(value, target)
 {
   if(target)
   {
-    $(target).setProperty('value', value)
+    $(target).setProperty('value', value);
   }
   else
   {
     console.log("show: " + value);
   }
-}.decorate(promise)
+}.decorate(promise);
 
 
 function example1()
@@ -63,7 +63,7 @@ function example3()
   while(resource = resources.shift())
   {
     var aPromise = get(resource);
-    if(resources.length > 0) aPromise.op(function(value) { return value += ", " });
+    if(resources.length > 0) aPromise.op(function(value) { return value += ", "; });
     result = add(result, aPromise);
   }
   show(result, 'ex3'); // -> "a, b, c, d, e, f"
@@ -114,12 +114,12 @@ var oddEven = [odd, even];
 var add2 = function(a, b)
 {
   return a + b;
-}.decorate(promise, Function.pre(evenOdd, true))
+}.decorate(promise, Function.pre(evenOdd, true));
 
 var add3 = function(a, b)
 {
   return a + b;
-}.decorate(promise, Function.pre(evenOdd, console.log))
+}.decorate(promise, Function.pre(evenOdd, console.log));
 
 function example7()
 {

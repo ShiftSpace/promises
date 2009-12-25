@@ -87,7 +87,7 @@ var Promise = new Class({
       // if handed a promise, watch it
       value.addEvent('realized', function() {
         this.setValue(value.value());
-      }.bind(this))
+      }.bind(this));
     } else if(typeof value != 'undefined') {
       // if handed a regular value, set the value immediately but don't
       // trigger a realized event. 
@@ -366,7 +366,7 @@ Promise.debug = false;
 */
 Promise.isPromise = function(obj) {
   return (obj && obj.name == "Promise");
-}
+};
 
 /*
   Function: Promise.getValue
@@ -376,7 +376,7 @@ Promise.isPromise = function(obj) {
 Promise.getValue = function(v) {
   while (Promise.isPromise(v) && v.isRealized()) v = v.value();
   return v;
-}
+};
 
 /*
   Function: Promise.toValues
@@ -392,7 +392,7 @@ Promise.getValue = function(v) {
 Promise.toValues = function(ary) {
   while(ary.some(Promise.isPromise)) ary = ary.map(Promise.getValue);
   return ary;
-}
+};
 
 /*
   Function: Promise.promiseOrValue
@@ -411,7 +411,7 @@ Promise.promiseOrValue = function(v) {
   if(v && v.xhr) return new Promise(v);
   if(Promise.isPromise(v) && v.isRealized()) return v.value();
   return v;
-}
+};
 
 /*
   Function: Promise.watch
@@ -451,9 +451,9 @@ Promise.watch = function(args, cb, errCb) {
     // don't attempt to realize lazy values. They are realized then setValue is called on them.
     unrealized.filter(Function.msg('isNotLazy')).each(Function.msg('realize'));
   } else {
-    cb(Promise.toValues(args))
+    cb(Promise.toValues(args));
   }
-}
+};
 
 /*
   Function: Promise.allRealized
@@ -466,7 +466,7 @@ Promise.watch = function(args, cb, errCb) {
   Returns:
     A boolean.
 */
-Promise.allRealized = function(vs) { return vs.filter(Promise.isPromise).every(Function.msg("isRealized")); }
+Promise.allRealized = function(vs) { return vs.filter(Promise.isPromise).every(Function.msg("isRealized")); };
 
 /*
   Decorator: promise
@@ -520,7 +520,7 @@ function promise(fn) {
       var porv = Promise.promiseOrValue(fn.apply(this, args.map(Promise.getValue)));
       return porv;
     }
-  }
+  };
 }
 
 /*
