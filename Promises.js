@@ -310,7 +310,7 @@ var Promise = new Class({
   */
   get: function() {
     var args = $A(arguments);
-    if(!this.isRealized()) return (new Promise(this, {lazy:this.options.lazy})).op(function(v) { return Function.get.apply(null, [v].extend(args)); });
+    if(!this.isRealized()) return (new Promise(this, {lazy:this.options.lazy})).op(function(v) { return $get.apply(null, [v].extend(args)); });
     return Function.get.apply(null, [this.value()].extend(args));
   },
   
