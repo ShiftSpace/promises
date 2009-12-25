@@ -85,6 +85,7 @@ var Promise = new Class({
       }.bind(this));
     } else if(Promise.isPromise(value)) {
       // if handed a promise, watch it
+      this.__promise = value;
       value.addEvent('realized', function() {
         this.setValue(value.value());
       }.bind(this));
@@ -173,6 +174,15 @@ var Promise = new Class({
       this.__req.send();
     } else if(this.__plain) {
       this.setValue(this.value());
+    } else if(this.__promise) {
+      if(this.__promise.isRealized())
+      {
+        this.setValue(this.__promise.value());
+      }
+      else
+      {
+        this.__promise.realize();
+      }
     }
     return this;
   },
@@ -230,12 +240,12 @@ var Promise = new Class({
   setValue: function(value, notify) {
     if(value && value.xhr) {
       this.initReq(value);
+    } else if(!this.__realized && notify !== false) {
+      this.__realized = true;
+      this.__value = this.applyOps(value);
+      this.fireEvent('realized', this.__value);
     } else {
       this.__value = value;
-      if(!this.__realized && notify !== false) {
-        this.__realized = true;
-        this.fireEvent('realized', this.applyOps(this.__value));
-      }
     }
   },
   
@@ -310,7 +320,15 @@ var Promise = new Class({
   */
   get: function() {
     var args = $A(arguments);
-    if(!this.isRealized()) return (new Promise(this, {lazy:this.options.lazy})).op(function(v) { return $get.apply(null, [v].extend(args)); });
+    if(!this.isRealized())
+    {
+      return (new Promise(this, {lazy:this.options.lazy})).op(
+        function(v) {
+          var result = $get.apply(null, [v].extend(args));
+          return result;
+        }
+      );
+    }
     return Function.get.apply(null, [this.value()].extend(args));
   },
   

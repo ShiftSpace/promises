@@ -31,7 +31,7 @@ var show = function show(value, target)
   }
   else
   {
-    console.log("show: " + value);
+    console.log("show:", value);
   }
 }.decorate(promise);
 
@@ -158,6 +158,13 @@ function example10()
   p2.realize();
 }
 
+function example11()
+{
+  var nested = get("nested"),
+      bar = nested.get("foo", "bar");
+  show(bar, 'ex11');
+}
+
 // Run Examples
 // ============
 function runExamples()
@@ -178,6 +185,7 @@ function runExamples()
   example8();
   example9();
   example10();
+  example11();
   console.log(">>>>>>>>>>>>>>>>>>>> EXIT runExamples");
 }
 
