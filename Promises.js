@@ -80,9 +80,10 @@ var Promise = new Class({
       }.bind(this));
     } else if(Promise.isPromise(value)) {
       // if handed a promise, watch it
+      this.__promise = value;
       value.addEvent('realized', function() {
         this.setValue(value.value());
-      }.bind(this))
+      }.bind(this));
     } else if(typeof value != 'undefined') {
       // if handed a regular value, set the value immediately but don't
       // trigger a realized event. 
@@ -168,6 +169,15 @@ var Promise = new Class({
       this.__req.send();
     } else if(this.__plain) {
       this.setValue(this.value());
+    } else if(this.__promise) {
+      if(this.__promise.isRealized())
+      {
+        this.setValue(this.__promise.value());
+      }
+      else
+      {
+        this.__promise.realize();
+      }
     }
     return this;
   },
@@ -225,12 +235,12 @@ var Promise = new Class({
   setValue: function(value, notify) {
     if(value && value.xhr) {
       this.initReq(value);
+    } else if(!this.__realized && notify !== false) {
+      this.__realized = true;
+      this.__value = this.applyOps(value);
+      this.fireEvent('realized', this.__value);
     } else {
       this.__value = value;
-      if(!this.__realized && notify !== false) {
-        this.__realized = true;
-        this.fireEvent('realized', this.applyOps(this.__value));
-      }
     }
   },
   
@@ -305,7 +315,15 @@ var Promise = new Class({
   */
   get: function() {
     var args = $A(arguments);
-    if(!this.isRealized()) return (new Promise(this, {lazy:this.options.lazy})).op(function(v) { return Function.get.apply(null, [v].extend(args)); });
+    if(!this.isRealized())
+    {
+      return (new Promise(this, {lazy:this.options.lazy})).op(
+        function(v) {
+          var result = $get.apply(null, [v].extend(args));
+          return result;
+        }
+      );
+    }
     return Function.get.apply(null, [this.value()].extend(args));
   },
   
@@ -361,7 +379,7 @@ Promise.debug = false;
 */
 Promise.isPromise = function(obj) {
   return (obj && obj.name == "Promise");
-}
+};
 
 /*
   Function: Promise.getValue
@@ -371,7 +389,7 @@ Promise.isPromise = function(obj) {
 Promise.getValue = function(v) {
   while (Promise.isPromise(v) && v.isRealized()) v = v.value();
   return v;
-}
+};
 
 /*
   Function: Promise.toValues
@@ -387,7 +405,7 @@ Promise.getValue = function(v) {
 Promise.toValues = function(ary) {
   while(ary.some(Promise.isPromise)) ary = ary.map(Promise.getValue);
   return ary;
-}
+};
 
 /*
   Function: Promise.promiseOrValue
@@ -406,7 +424,7 @@ Promise.promiseOrValue = function(v) {
   if(v && v.xhr) return new Promise(v);
   if(Promise.isPromise(v) && v.isRealized()) return v.value();
   return v;
-}
+};
 
 /*
   Function: Promise.watch
@@ -446,9 +464,9 @@ Promise.watch = function(args, cb, errCb) {
     // don't attempt to realize lazy values. They are realized then setValue is called on them.
     unrealized.filter(Function.msg('isNotLazy')).each(Function.msg('realize'));
   } else {
-    cb(Promise.toValues(args))
+    cb(Promise.toValues(args));
   }
-}
+};
 
 /*
   Function: Promise.allRealized
@@ -461,7 +479,7 @@ Promise.watch = function(args, cb, errCb) {
   Returns:
     A boolean.
 */
-Promise.allRealized = function(vs) { return vs.filter(Promise.isPromise).every(Function.msg("isRealized")); }
+Promise.allRealized = function(vs) { return vs.filter(Promise.isPromise).every(Function.msg("isRealized")); };
 
 /*
   Decorator: promise
@@ -515,7 +533,7 @@ function promise(fn) {
       var porv = Promise.promiseOrValue(fn.apply(this, args.map(Promise.getValue)));
       return porv;
     }
-  }
+  };
 }
 
 /*
