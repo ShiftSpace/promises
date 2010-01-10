@@ -66,6 +66,8 @@ var Promise = new Class({
     // if handed a Request object initialize it
     if(value && value.xhr) {
       this.initReq(value);
+    } else if(value && value.name == "DelayedAsset") {
+      this.initDelayedAsset(value);
     } else if(value && $type(value) == "array") {
       // if handed an array look for promises and watch them.
       // watch is not lazy, triggers realize, might want to change this
@@ -132,8 +134,8 @@ var Promise = new Class({
   initReq: function(req) {
     this.__req = req;
     req.addEvent('onSuccess', function(responseText) {
-      var json = (!req.options.bare) ? JSON.decode(responseText) : responseText;
-      var v = (json.data !== null && json.data !== undefined) ? json.data : json;
+      var json = (!req.options.bare) ? JSON.decode(responseText) : responseText,
+          v = (json.data !== null && json.data !== undefined) ? json.data : json;
       this.setValue(this.applyOps(v));
     }.bind(this));
     req.addEvent('onFailure', function(responseText) {
@@ -141,6 +143,15 @@ var Promise = new Class({
       this.fireEvent('error', this);
     }.bind(this));
   },
+
+
+  initDelayedAsset: function(asset) {
+    this.__asset = asset;
+    asset.addEvent('onload', function() {
+      this.setValue(true);
+    }.bind(this));
+  },
+
   
   /*
     Function: setAsync
@@ -172,6 +183,9 @@ var Promise = new Class({
       this.__realizing = true;
       if(Promise.debug || !this.isAsync()) this.__req.options.async = false;
       this.__req.send();
+    } else if(this.__asset && !this.__realizing) {
+      this.__realizing = true;
+      this.__asset.load();
     } else if(this.__plain) {
       this.setValue(this.value());
     } else if(this.__promise) {

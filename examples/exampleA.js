@@ -165,6 +165,12 @@ function example11()
   show(bar, 'ex11');
 }
 
+function example12()
+{
+  var da = new Promise(new DelayedAsset('javascript', 'data/test.js'));
+  show(da);
+}
+
 // Run Examples
 // ============
 function runExamples()
@@ -186,6 +192,7 @@ function runExamples()
   example9();
   example10();
   example11();
+  example12();
   console.log(">>>>>>>>>>>>>>>>>>>> EXIT runExamples");
 }
 
