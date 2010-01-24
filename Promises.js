@@ -11,7 +11,7 @@
 */
 
 Function.implement({
-  asPromise: function() { return this.decorate(promise); }
+  future: function() { return this.decorate(promise); }
 });
 
 /*
@@ -577,7 +577,7 @@ var $if = function(test, trueExpr, falseExpr) {
     if($type(falseExpr) == "function") return falseExpr(test);
     return falseExpr;
   }
-}.asPromise();
+}.future();
 
 /*
   Function: $and
@@ -589,4 +589,4 @@ var $if = function(test, trueExpr, falseExpr) {
 var $and = function() {
   var args = $A(arguments);
   return args.every($identity);
-}.asPromise();
+}.future();

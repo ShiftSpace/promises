@@ -72,7 +72,7 @@ function example3()
 // short cut (For Avital)
 function example4()
 {
-  var subtract = function(a, b) { return a - b; }.asPromise();
+  var subtract = function(a, b) { return a - b; }.future();
   show(subtract(get("10"), get("7")), "ex4");
 }
 
@@ -140,7 +140,7 @@ function example8()
 // Promises with regular values
 function example9()
 {
-  var x = function(x) { return x * 2; }.asPromise();
+  var x = function(x) { return x * 2; }.future();
   var p1 = new Promise(5);
   var p2 = x(p1);
   show(p2);
@@ -149,7 +149,7 @@ function example9()
 
 function example10()
 {
-  var x = function(a, b) { return a * b; }.asPromise();
+  var x = function(a, b) { return a * b; }.future();
   var p1 = $promise(3);
   var p2 = $promise(4);
   var p3 = x(p1, p2);
