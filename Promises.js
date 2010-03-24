@@ -36,7 +36,7 @@ Function.implement({
       to false.
     meta - Store some metadata about the promise. Useful fo debugging.
     plain - The promise is a plain value. That is it is not a request. Not
-      intended to be used directly. See $lazy.
+      intended to be used directly.
     async - Make the promise realize synchronously. Defaults to false.
 */
 var Promise = new Class({
@@ -96,6 +96,9 @@ var Promise = new Class({
       // trigger a realized event. 
       this.__plain = true;
       this.setValue(value, false);
+    } else if(typeof value == 'undefined') {
+      this.__plain = true;
+      this.options.lazy = true;
     }
     
     return this;
@@ -368,16 +371,6 @@ var Promise = new Class({
     Convenience for creating promises.
 */
 var $P = $promise = function(v, options) { return new Promise(v, options); };
-
-/*
-  Function: $lazy
-    Creates Promises which can be uses as lazy values. See readme.textile
-    for more details.
-    
-  Returns:
-    A Promise instance with the lazy and plain options set to true.
-*/
-var $lazy = function(v, options) { return new Promise(v, $merge({lazy:true, plain:true}, options)); };
 
 /*
   Constant: Promise.debug

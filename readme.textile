@@ -500,8 +500,8 @@ exist yet. This is useful even when no remote request are involved. For example:
 
 <pre>
 var add = function(a, b) { return a + b; }.decorate(promise);
-var a = $lazy();
-var b = $lazy();
+var a = $P();
+var b = $P();
 var sum = add(a, b);
 
 sum.value(); // -> undefined
