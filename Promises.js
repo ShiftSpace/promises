@@ -1,12 +1,12 @@
 /*
-  Promises version 0.7
+  Promises version 0.8
   
   An implementation of promises for MooTools:
   http://en.wikipedia.org/wiki/Futures_and_promises
 */
 
 Function.implement({
-  asPromise: function() { return this.decorate(promise); }
+  future: function() { return this.decorate(promise); }
 });
 
 /*
@@ -23,7 +23,7 @@ Function.implement({
     
   Options:
     lazy - The promise is treated as a lazy value. It only trigger a
-      realized event when setValue is called on it. Defaults to false.
+      realized event when deliver is called on it. Defaults to false.
     reduce - A function. Convenience when a promise wraps an array of
       promises. The function should take an array and return a single value.
     bare - Useful when using promises to load files. Otherwise a promise
@@ -31,7 +31,7 @@ Function.implement({
       to false.
     meta - Store some metadata about the promise. Useful fo debugging.
     plain - The promise is a plain value. That is it is not a request. Not
-      intended to be used directly. See $lazy.
+      intended to be used directly.
     async - Make the promise realize synchronously. Defaults to false.
 */
 var Promise = new Class({
@@ -70,7 +70,7 @@ var Promise = new Class({
       Promise.watch(value, function(promises) {
         var values = promises.map(Promise.getValue);
         var result = (this.options.reduce && this.options.reduce.apply(null, values)) || values;
-        this.setValue(result);
+        this.deliver(result);
       }.bind(this));
     } else if(value && 
               !Promise.isPromise(value) && 
@@ -78,19 +78,22 @@ var Promise = new Class({
               $H(value).getValues().some(Promise.isPromise)) {
       // if handed an object look for promises in the values - not recursive
       Promise.watch($H(value).getValues(), function(promises) {
-        this.setValue($H(value).map(Promise.getValue).getClean());
+        this.deliver($H(value).map(Promise.getValue).getClean());
       }.bind(this));
     } else if(Promise.isPromise(value)) {
       // if handed a promise, watch it
       this.__promise = value;
       value.addEvent('realized', function() {
-        this.setValue(value.value());
+        this.deliver(value.value());
       }.bind(this));
     } else if(typeof value != 'undefined') {
       // if handed a regular value, set the value immediately but don't
       // trigger a realized event. 
       this.__plain = true;
-      this.setValue(value, false);
+      this.deliver(value, false);
+    } else if(typeof value == 'undefined') {
+      this.__plain = true;
+      this.options.lazy = true;
     }
     
     return this;
@@ -118,9 +121,9 @@ var Promise = new Class({
   /*
     Function: initReq
       *private*
-      Initialize the request. If successfull calls setValue with the value
+      Initialize the request. If successfull calls deliver with the value
       received from the server after applying all operations on the value
-      first. On request failure, setValues to undefined and fires an error
+      first. On request failure, delivers to undefined and fires an error
       event passing itself as data.
     
     Parameters:
@@ -128,13 +131,21 @@ var Promise = new Class({
   */
   initReq: function(req) {
     this.__req = req;
-    req.addEvent('onSuccess', function(responseText) {
-      var json = (!req.options.bare) ? JSON.decode(responseText) : responseText,
-          v = (json.data !== null && json.data !== undefined) ? json.data : json;
-      this.setValue(this.applyOps(v));
+    req.addEvent('onSuccess', function(r) {
+      var json = ($type(r) == 'object') ? r : ((!req.options.bare) ? JSON.decode(r) : r),
+          v;
+      if(Promise.deref !== null) {
+        var temp = $get.apply(null, [json].concat(Promise.deref.split(".")));
+        if(temp !== null && temp !== undefined) {
+          v = temp;
+        }
+      } else {
+        v = json;
+      }
+      this.deliver(this.applyOps(v));
     }.bind(this));
     req.addEvent('onFailure', function(responseText) {
-      this.setValue(undefined);
+      this.deliver(undefined);
       this.fireEvent('error', this);
     }.bind(this));
   },
@@ -143,7 +154,7 @@ var Promise = new Class({
   initDelayedAsset: function(asset) {
     this.__asset = asset;
     asset.addEvent('onload', function() {
-      this.setValue(true);
+      this.deliver(true);
     }.bind(this));
   },
 
@@ -171,7 +182,7 @@ var Promise = new Class({
       Realize the value of the promise. If the promise is a request, sends
       the request. If Promise.debug == true or the async option is set to
       false the request will be made synchronously. If the value is plain
-      simply calls setValue with the current value of the promise.
+      simply calls deliver with the current value of the promise.
   */
   realize: function() {
     if(this.__req && !this.__realizing) {
@@ -182,14 +193,11 @@ var Promise = new Class({
       this.__realizing = true;
       this.__asset.load();
     } else if(this.__plain) {
-      this.setValue(this.value());
+      this.deliver(this.value());
     } else if(this.__promise) {
-      if(this.__promise.isRealized())
-      {
-        this.setValue(this.__promise.value());
-      }
-      else
-      {
+      if(this.__promise.isRealized()) {
+        this.deliver(this.__promise.value());
+      } else {
         this.__promise.realize();
       }
     }
@@ -231,14 +239,14 @@ var Promise = new Class({
     if(!this.__realized) {
       this.__ops.push(fn);
     } else {
-      this.setValue(fn(this.__value));
+      this.deliver(fn(this.__value));
     }
     if(!this.__realized) return this;
     return this.value();
   },
   
   /*
-    Function: setValue
+    Function: deliver
       If the promises wraps a Request this is called automatically. If the
       promise is lazy, calling this will trigger the realized event.
       
@@ -246,7 +254,7 @@ var Promise = new Class({
       value - a value.
       notify - whether to trigger the realized event.
   */
-  setValue: function(value, notify) {
+  deliver: function(value, notify) {
     if(value && value.xhr) {
       this.initReq(value);
     } else if(!this.__realized && notify !== false) {
@@ -357,22 +365,13 @@ var Promise = new Class({
     return fn(this.value());
   }
 });
+Promise.deref = 'data';
 
 /*
   Function: $P, $promise
     Convenience for creating promises.
 */
 var $P = $promise = function(v, options) { return new Promise(v, options); };
-
-/*
-  Function: $lazy
-    Creates Promises which can be uses as lazy values. See readme.textile
-    for more details.
-    
-  Returns:
-    A Promise instance with the lazy and plain options set to true.
-*/
-var $lazy = function(v, options) { return new Promise(v, $merge({lazy:true, plain:true}, options)); };
 
 /*
   Constant: Promise.debug
@@ -475,7 +474,7 @@ Promise.watch = function(args, cb, errCb) {
       });
     }
 
-    // don't attempt to realize lazy values. They are realized then setValue is called on them.
+    // don't attempt to realize lazy values. They are realized then deliver is called on them.
     unrealized.filter(Function.msg('isNotLazy')).each(Function.msg('realize'));
   } else {
     cb(Promise.toValues(args));
@@ -523,7 +522,7 @@ function promise(fn) {
             // hack so that this.parent(...) is meaningful even after an async call
             var temp = this._current;
             this._current = decorator._wrapper;
-            p.setValue(fn.apply(this, values));
+            p.deliver(fn.apply(this, values));
             this._current = temp;
           }.bind(this),
           function(errPromise) {
@@ -572,7 +571,7 @@ var $if = function(test, trueExpr, falseExpr) {
     if($type(falseExpr) == "function") return falseExpr(test);
     return falseExpr;
   }
-}.asPromise();
+}.future();
 
 /*
   Function: $and
@@ -584,4 +583,4 @@ var $if = function(test, trueExpr, falseExpr) {
 var $and = function() {
   var args = $A(arguments);
   return args.every($identity);
-}.asPromise();
+}.future();
