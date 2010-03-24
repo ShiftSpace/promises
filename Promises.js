@@ -140,7 +140,7 @@ var Promise = new Class({
       var json = ($type(r) == 'object') ? r : ((!req.options.bare) ? JSON.decode(r) : r),
           v;
       if(Promise.deref !== null) {
-        var temp = Function.get.apply(null, [json].concat(Promise.deref.split(".")));
+        var temp = $get.apply(null, [json].concat(Promise.deref.split(".")));
         if(temp !== null && temp !== undefined) {
           v = temp;
         }
