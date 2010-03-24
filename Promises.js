@@ -138,7 +138,7 @@ var Promise = new Class({
     this.__req = req;
     req.addEvent('onSuccess', function(responseText) {
       var json = (!req.options.bare) ? JSON.decode(responseText) : responseText,
-          v = (json.data !== null && json.data !== undefined) ? json.data : json;
+          v = (Promise.deref !== null && json[Promise.deref] !== null && json[Promise.deref] !== undefined) ? json[Promise.deref] : json;
       this.deliver(this.applyOps(v));
     }.bind(this));
     req.addEvent('onFailure', function(responseText) {
@@ -365,6 +365,7 @@ var Promise = new Class({
     return fn(this.value());
   }
 });
+Promise.deref = 'data';
 
 /*
   Function: $P, $promise
