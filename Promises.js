@@ -543,7 +543,7 @@ function promise(fn) {
         unrealized.each(Function.msg('realize'));
         var values = args.map(Promise.getValue);
         this._current = decorator._wrapper;
-        result = fn.apply(this, values);
+        var result = fn.apply(this, values);
         this._current = temp;
         return result;
       }
