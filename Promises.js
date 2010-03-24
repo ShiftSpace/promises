@@ -200,12 +200,9 @@ var Promise = new Class({
     } else if(this.__plain) {
       this.deliver(this.value());
     } else if(this.__promise) {
-      if(this.__promise.isRealized())
-      {
+      if(this.__promise.isRealized()) {
         this.deliver(this.__promise.value());
-      }
-      else
-      {
+      } else {
         this.__promise.realize();
       }
     }
