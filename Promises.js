@@ -136,8 +136,8 @@ var Promise = new Class({
   */
   initReq: function(req) {
     this.__req = req;
-    req.addEvent('onSuccess', function(responseText) {
-      var json = (!req.options.bare) ? JSON.decode(responseText) : responseText,
+    req.addEvent('onSuccess', function(r) {
+      var json = ($type(r) == 'object') ? r : ((!req.options.bare) ? JSON.decode(r) : r),
           v = (Promise.deref !== null && json[Promise.deref] !== null && json[Promise.deref] !== undefined) ? json[Promise.deref] : json;
       this.deliver(this.applyOps(v));
     }.bind(this));
