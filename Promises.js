@@ -138,7 +138,15 @@ var Promise = new Class({
     this.__req = req;
     req.addEvent('onSuccess', function(r) {
       var json = ($type(r) == 'object') ? r : ((!req.options.bare) ? JSON.decode(r) : r),
-          v = (Promise.deref !== null && json[Promise.deref] !== null && json[Promise.deref] !== undefined) ? json[Promise.deref] : json;
+          v;
+      if(Promise.deref !== null) {
+        var temp = Function.get.apply(null, [json].concat(Promise.deref.split(".")));
+        if(temp !== null && temp !== undefined) {
+          v = temp;
+        }
+      } else {
+        v = json;
+      }
       this.deliver(this.applyOps(v));
     }.bind(this));
     req.addEvent('onFailure', function(responseText) {
