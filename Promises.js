@@ -139,7 +139,7 @@ var Promise = new Class({
     req.addEvent('onSuccess', function(r) {
       var json = ($type(r) == 'object') ? r : ((!req.options.bare) ? JSON.decode(r) : r),
           v;
-      if(Promise.deref !== null) {
+      if(Promise.deref !== null && req.options.bare !== true) {
         var temp = $get.apply(null, [json].concat(Promise.deref.split(".")));
         if(temp !== null && temp !== undefined) {
           v = temp;
