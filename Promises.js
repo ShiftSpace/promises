@@ -134,7 +134,7 @@ var Promise = new Class({
     req.addEvent('onSuccess', function(r) {
       var json = ($type(r) == 'object') ? r : ((!req.options.bare) ? JSON.decode(r) : r),
           v;
-      if(Promise.deref !== null && req.options.bare !== true) {
+      if(Promise.deref !== null && req.options.bare !== true && !json.error) {
         var temp = $get.apply(null, [json].concat(Promise.deref.split(".")));
         if(temp !== null && temp !== undefined) {
           v = temp;
@@ -365,6 +365,11 @@ var Promise = new Class({
     return fn(this.value());
   }
 });
+
+/*
+  Variable: Promise.deref
+    Setting for how Promises will be dereferenced.
+*/
 Promise.deref = 'data';
 
 /*
