@@ -14,6 +14,10 @@ Function.implement({
   future: function() { return this.decorate(promise); }
 });
 
+function Future(fn) {
+  return fn.decorate(promise);
+};
+
 /*
   Class: Promise
     You can create empty Promise instances, Promises from unsent Request 
