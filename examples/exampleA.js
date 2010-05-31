@@ -171,6 +171,23 @@ function example12()
   show(da);
 }
 
+// we need to go from a map
+// to a map of values loaded
+// via promises
+function example13()
+{
+  var amap = {
+    "foo": get("a"),
+    "bar": {
+      "baz": get("b"),
+      "woz": get("c")
+    }
+  };
+  window.amap = amap;
+  var p = new Promise(amap);
+  show(p);
+}
+
 // Run Examples
 // ============
 function runExamples()
@@ -193,6 +210,6 @@ function runExamples()
   example10();
   example11();
   example12();
+  example13();
   console.log(">>>>>>>>>>>>>>>>>>>> EXIT runExamples");
 }
-

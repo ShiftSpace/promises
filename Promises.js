@@ -90,9 +90,9 @@ var Promise = new Class({
       // however you should not put anything in the promise except normal values or promises
       // i.e. no custom instances
       this._isObject = true;
-      var xs = $treeFilter(value, Promise.isPromise, Promise.isPromise);
-      Promise.watch($H(value).getValues(), function(promises) {
-        this.deliver($H(value).map(Promise.getValue).getClean());
+      var ps = $treeFilter(value, Promise.isPromise, Promise.isPromise);
+      Promise.watch(ps, function(promises) {
+        this.deliver(value);
       }.bind(this));
     } else if(Promise.isPromise(value)) {
       // if handed a promise, watch it
@@ -231,6 +231,10 @@ var Promise = new Class({
       argument.
   */
   applyOps: function(value) {
+    if(this._isObject) value = $treeMap(value, function(x) {
+      if(Promise.isPromise(x)) return x.value();
+      return x;
+    }, Promise.isPromise);
     var aop = this.__ops.shift();
     while(aop) {
       value = aop(value);
