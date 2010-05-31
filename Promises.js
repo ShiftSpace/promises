@@ -90,7 +90,7 @@ var Promise = new Class({
       // however you should not put anything in the promise except normal values or promises
       // i.e. no custom instances
       this._isObject = true;
-      //var xs = $treeFilter(value, Promise.isPromise, Function.not(Promise.isPromise));
+      var xs = $treeFilter(value, Promise.isPromise, Promise.isPromise);
       Promise.watch($H(value).getValues(), function(promises) {
         this.deliver($H(value).map(Promise.getValue).getClean());
       }.bind(this));
