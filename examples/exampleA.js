@@ -171,9 +171,6 @@ function example12()
   show(da);
 }
 
-// we need to go from a map
-// to a map of values loaded
-// via promises
 function example13()
 {
   var amap = {
