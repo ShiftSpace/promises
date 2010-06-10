@@ -89,6 +89,7 @@ var Promise = new Class({
       // if handed an object look for promises in the values - handles the recursive case
       // however you should not put anything in the promise except normal values or promises
       // i.e. no custom instances
+      this.__object = value;
       this.__isObject = true;
       var ps = $treeFilter(value, Promise.isPromise, Promise.isPromise);
       Promise.watch(ps, function(promises) {
@@ -214,6 +215,9 @@ var Promise = new Class({
       } else {
         this.__promise.realize();
       }
+    } else if(this.__object) {
+      var ps = $treeFilter(this.__object, Promise.isPromise, Promise.isPromise);
+      ps.map(Function.msg("realize"));
     }
     return this;
   },
