@@ -76,7 +76,7 @@ var Promise = new Class({
       // if handed an array look for promises and watch them.
       // watch is not lazy, triggers realize, might want to change this
       // David 11/16/2009
-      this._isArray = true;
+      this.__isArray = true;
       Promise.watch(value, function(promises) {
         var values = promises.map(Promise.getValue);
         var result = (this.options.reduce && this.options.reduce.apply(null, values)) || values;
@@ -89,7 +89,7 @@ var Promise = new Class({
       // if handed an object look for promises in the values - handles the recursive case
       // however you should not put anything in the promise except normal values or promises
       // i.e. no custom instances
-      this._isObject = true;
+      this.__isObject = true;
       var ps = $treeFilter(value, Promise.isPromise, Promise.isPromise);
       Promise.watch(ps, function(promises) {
         this.deliver(value);
@@ -231,7 +231,7 @@ var Promise = new Class({
       argument.
   */
   applyOps: function(value) {
-    if(this._isObject) value = $treeMap(value, function(x) {
+    if(this.__isObject) value = $treeMap(value, function(x) {
       if(Promise.isPromise(x)) return x.value();
       return x;
     }, Promise.isPromise);
