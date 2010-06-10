@@ -85,7 +85,7 @@ var Promise = new Class({
     } else if(value && 
               !Promise.isPromise(value) && 
               $type(value) == "object" && 
-              $H(value).getValues().some(Promise.isPromise)) {
+              $treeFilter(value, Promise.isPromise, Promise.isPromise).length > 0) {
       // if handed an object look for promises in the values - handles the recursive case
       // however you should not put anything in the promise except normal values or promises
       // i.e. no custom instances
