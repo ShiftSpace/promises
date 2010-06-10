@@ -476,8 +476,8 @@ Promise.promiseOrValue = function(v) {
     errCb - a error callback.
 */
 Promise.watch = function(args, cb, errCb) {
-  var promises = args.filter(Promise.isPromise);
-  var unrealized = promises.filter(Function.msg("isNotRealized"));
+  var promises = args.filter(Promise.isPromise),
+      unrealized = promises.filter(Function.msg("isNotRealized"));
   
   if(unrealized.length > 0) {
     var watching = new Group(unrealized);
@@ -532,9 +532,9 @@ Promise.allRealized = function(vs) { return vs.filter(Promise.isPromise).every(F
 */
 function promise(fn) {
   return function decorator() {
-    var args = $A(arguments);
-    var promises = args.filter(Promise.isPromise);
-    var unrealized = promises.filter(Function.msg('isNotRealized'));
+    var args = $A(arguments),
+        promises = args.filter(Promise.isPromise),
+        unrealized = promises.filter(Function.msg('isNotRealized'));
     
     if(unrealized.length > 0) {
       if(!Promise.debug) {
